@@ -478,17 +478,13 @@ main {
 
 .program-item {
   display: grid;
-  grid-template-columns: 1fr 2fr auto;
+  grid-template-columns: 1fr 2fr 1fr auto;
   gap: 0.75rem;
   padding: 0.75rem;
   background: var(--surface-muted);
   border: 1px solid var(--stroke);
   border-radius: var(--radius-sm);
   align-items: start;
-}
-
-.program-item.with-link {
-  grid-template-columns: 1fr 2fr 1fr auto;
 }
 
 .program-item input {
@@ -554,10 +550,6 @@ main {
 /* Responsive */
 @media (max-width: 640px) {
   .program-item {
-    grid-template-columns: 1fr;
-  }
-
-  .program-item.with-link {
     grid-template-columns: 1fr;
   }
 
@@ -834,26 +826,21 @@ function initSectionToggles() {
 // === Program Item Templates ===
 function createProgramItemHTML(item, section) {
   const { program = '', details = '', link = '' } = item;
-  const hasLink = ['banner', 'announcements'].includes(section);
 
   const div = document.createElement('div');
-  div.className = `program-item${hasLink ? ' with-link' : ''}`;
+  div.className = 'program-item';
   div.dataset.section = section;
 
-  if (hasLink) {
-    div.innerHTML = `
-      <input type="text" class="item-program" placeholder="Title" value="${escapeHtml(program)}">
-      <input type="text" class="item-details" placeholder="Description" value="${escapeHtml(details)}">
-      <input type="text" class="item-link" placeholder="Link (optional)" value="${escapeHtml(link)}">
-      <button type="button" class="remove-btn" title="Remove">&times;</button>
-    `;
-  } else {
-    div.innerHTML = `
-      <input type="text" class="item-program" placeholder="Item (e.g., Opening Hymn)" value="${escapeHtml(program)}">
-      <input type="text" class="item-details" placeholder="Details (e.g., #123 or Name)" value="${escapeHtml(details)}">
-      <button type="button" class="remove-btn" title="Remove">&times;</button>
-    `;
-  }
+  // All sections now have link field
+  const programPlaceholder = ['banner', 'announcements'].includes(section) ? 'Title' : 'Item (e.g., Opening Hymn)';
+  const detailsPlaceholder = ['banner', 'announcements'].includes(section) ? 'Description' : 'Details (e.g., #123 or Name)';
+
+  div.innerHTML = `
+    <input type="text" class="item-program" placeholder="${programPlaceholder}" value="${escapeHtml(program)}">
+    <input type="text" class="item-details" placeholder="${detailsPlaceholder}" value="${escapeHtml(details)}">
+    <input type="text" class="item-link" placeholder="Link (optional)" value="${escapeHtml(link)}">
+    <button type="button" class="remove-btn" title="Remove">&times;</button>
+  `;
 
   div.querySelector('.remove-btn').addEventListener('click', () => {
     div.remove();
@@ -998,7 +985,7 @@ function collectProgramData() {
     data.push({
       program: item.querySelector('.item-program')?.value || '',
       details: item.querySelector('.item-details')?.value || '',
-      link: ''
+      link: item.querySelector('.item-link')?.value || ''
     });
   });
 
@@ -1008,7 +995,7 @@ function collectProgramData() {
     data.push({
       program: item.querySelector('.item-program')?.value || '',
       details: item.querySelector('.item-details')?.value || '',
-      link: ''
+      link: item.querySelector('.item-link')?.value || ''
     });
   });
 
@@ -1018,7 +1005,7 @@ function collectProgramData() {
     data.push({
       program: item.querySelector('.item-program')?.value || '',
       details: item.querySelector('.item-details')?.value || '',
-      link: ''
+      link: item.querySelector('.item-link')?.value || ''
     });
   });
 
@@ -1028,7 +1015,7 @@ function collectProgramData() {
     data.push({
       program: item.querySelector('.item-program')?.value || '',
       details: item.querySelector('.item-details')?.value || '',
-      link: ''
+      link: item.querySelector('.item-link')?.value || ''
     });
   });
 
