@@ -592,6 +592,29 @@ main {
   border-color: var(--accent);
 }
 
+/* Program Grid (desktop) */
+.program-grid {
+  grid-template-columns: 1fr 2fr auto !important;
+}
+
+/* Event Grid (desktop) */
+.event-grid {
+  grid-template-columns: 1.2fr 60px 1.5fr 1fr auto !important;
+}
+
+.event-grid .event-icon {
+  text-align: center;
+}
+
+/* Mobile labels - hidden on desktop */
+.mobile-label {
+  display: none;
+}
+
+.mobile-field {
+  display: contents;
+}
+
 /* Footer */
 .site-footer {
   margin-top: auto;
@@ -603,18 +626,202 @@ main {
 
 /* Responsive */
 @media (max-width: 640px) {
-  .program-item-row {
-    grid-template-columns: 1fr;
+  :root {
+    --content-width: 95vw;
+  }
+
+  .header-shell {
+    padding: 0.5rem 0;
+  }
+
+  .brand {
+    padding: 0.4rem 0.6rem 0.4rem 0.4rem;
+    gap: 0.5rem;
+  }
+
+  .brand-icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.9rem;
+  }
+
+  .brand-title {
+    font-size: 1rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.72rem;
   }
 
   .admin-header {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .admin-title {
+    font-size: 1.4rem;
   }
 
   .admin-actions {
     justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .admin-actions .btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .section-card {
+    margin-bottom: 1rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .section-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .section-content {
+    padding: 1rem;
+  }
+
+  .program-items {
+    gap: 1rem;
+  }
+
+  .program-item {
+    padding: 1rem;
+    gap: 0.75rem;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Stack program item fields vertically on mobile */
+  .program-item-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem;
+  }
+
+  .program-item-row input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+  }
+
+  /* Add labels on mobile for clarity */
+  .program-item-row input::placeholder {
+    color: var(--ink-muted);
+    opacity: 1;
+  }
+
+  /* Move remove button to top-right corner on mobile */
+  .program-item {
+    position: relative;
+  }
+
+  .program-item-row .remove-btn {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 1rem;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    z-index: 1;
+  }
+
+  /* Event items - show labels on mobile */
+  .mobile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .mobile-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .program-grid,
+  .event-grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Icon field inline with date on mobile */
+  .event-item .icon-field {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .event-item .icon-field .mobile-label {
+    min-width: 30px;
+  }
+
+  .event-item .icon-field .event-icon {
+    width: 60px;
+    text-align: center;
+  }
+
+  /* Better link row on mobile */
+  .link-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .link-row input {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .link-row .remove-link-btn {
+    align-self: flex-end;
+  }
+
+  .add-link-btn {
+    font-size: 0.82rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Textarea improvements */
+  .form-textarea {
+    min-height: 80px;
+  }
+
+  /* Status message */
+  .status-message {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  /* Login card */
+  .login-card {
+    margin: 2rem auto;
+    padding: 1.5rem;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
   }
 }
 </style>
@@ -902,11 +1109,23 @@ function createEventItemHTML(item) {
   div.className = 'program-item event-item';
 
   div.innerHTML = `
-    <div class="program-item-row" style="grid-template-columns: 1fr 60px 1.5fr 1fr auto;">
-      <input type="text" class="event-date" placeholder="Date (e.g., Every Wednesday)" value="${escapeHtml(date)}">
-      <input type="text" class="event-icon" placeholder="📅" value="${escapeHtml(icon)}" style="text-align: center;">
-      <input type="text" class="event-title" placeholder="Event Title" value="${escapeHtml(title)}">
-      <input type="text" class="event-info" placeholder="Time/Details" value="${escapeHtml(info)}">
+    <div class="program-item-row event-grid">
+      <div class="mobile-field">
+        <label class="mobile-label">Date</label>
+        <input type="text" class="event-date" placeholder="e.g., Every Wednesday" value="${escapeHtml(date)}">
+      </div>
+      <div class="mobile-field icon-field">
+        <label class="mobile-label">Icon</label>
+        <input type="text" class="event-icon" placeholder="📅" value="${escapeHtml(icon)}">
+      </div>
+      <div class="mobile-field">
+        <label class="mobile-label">Event Title</label>
+        <input type="text" class="event-title" placeholder="Youth Activities" value="${escapeHtml(title)}">
+      </div>
+      <div class="mobile-field">
+        <label class="mobile-label">Time/Details</label>
+        <input type="text" class="event-info" placeholder="7:00 PM" value="${escapeHtml(info)}">
+      </div>
       <button type="button" class="remove-btn" title="Remove">&times;</button>
     </div>
     <button type="button" class="add-link-btn ${hasLink ? 'hidden' : ''}">+ Add link</button>
@@ -950,14 +1169,23 @@ function createProgramItemHTML(item, section) {
   div.className = 'program-item';
   div.dataset.section = section;
 
-  // Placeholders based on section type
-  const programPlaceholder = ['banner', 'announcements'].includes(section) ? 'Title' : 'Item (e.g., Opening Hymn)';
-  const detailsPlaceholder = ['banner', 'announcements'].includes(section) ? 'Description' : 'Details (e.g., #123 or Name)';
+  // Labels and placeholders based on section type
+  const isBannerOrAnnouncement = ['banner', 'announcements'].includes(section);
+  const programLabel = isBannerOrAnnouncement ? 'Title' : 'Item';
+  const programPlaceholder = isBannerOrAnnouncement ? 'Title' : 'e.g., Opening Hymn';
+  const detailsLabel = isBannerOrAnnouncement ? 'Description' : 'Details';
+  const detailsPlaceholder = isBannerOrAnnouncement ? 'Description' : 'e.g., #123 or Name';
 
   div.innerHTML = `
-    <div class="program-item-row">
-      <input type="text" class="item-program" placeholder="${programPlaceholder}" value="${escapeHtml(program)}">
-      <input type="text" class="item-details" placeholder="${detailsPlaceholder}" value="${escapeHtml(details)}">
+    <div class="program-item-row program-grid">
+      <div class="mobile-field">
+        <label class="mobile-label">${programLabel}</label>
+        <input type="text" class="item-program" placeholder="${programPlaceholder}" value="${escapeHtml(program)}">
+      </div>
+      <div class="mobile-field">
+        <label class="mobile-label">${detailsLabel}</label>
+        <input type="text" class="item-details" placeholder="${detailsPlaceholder}" value="${escapeHtml(details)}">
+      </div>
       <button type="button" class="remove-btn" title="Remove">&times;</button>
     </div>
     <button type="button" class="add-link-btn ${hasLink ? 'hidden' : ''}">+ Add link</button>
