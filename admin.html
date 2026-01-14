@@ -675,6 +675,52 @@ main {
   display: none !important;
 }
 
+/* Hymn number row */
+.hymn-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-top: 0.25rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+.hymn-row.hidden {
+  display: none;
+}
+
+.hymn-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.hymn-number {
+  width: 80px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.hymn-number:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.hymn-hint {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
 /* Mobile labels - hidden on desktop */
 .mobile-label {
   display: none;
@@ -828,6 +874,16 @@ main {
     display: flex !important;
     flex-direction: column;
     gap: 0.4rem;
+  }
+
+  /* Hymn row on mobile */
+  .hymn-row {
+    flex-wrap: wrap;
+  }
+
+  .hymn-hint {
+    flex-basis: 100%;
+    margin-top: 0.25rem;
   }
 
   /* Better link row on mobile */
@@ -1273,9 +1329,34 @@ function createEventItemHTML(item) {
   return div;
 }
 
+// Helper to detect if text contains "hymn"
+function isHymnItem(text) {
+  return /hymn/i.test(text);
+}
+
+// Helper to extract hymn number from details like "#123" or "123"
+function extractHymnNumber(details) {
+  const match = details.match(/#?(\d+)/);
+  return match ? match[1] : '';
+}
+
+// Generate hymn link from number
+function getHymnLink(hymnNumber) {
+  if (!hymnNumber) return '';
+  const num = parseInt(hymnNumber, 10);
+  // Hymns 1-341 are traditional hymns, 1001+ are new hymns
+  if (num >= 1001) {
+    return `https://www.churchofjesuschrist.org/media/music/songs/hymn-${num}?lang=eng`;
+  } else {
+    return `https://www.churchofjesuschrist.org/media/music/songs/hymn-${num}?lang=eng`;
+  }
+}
+
 function createProgramItemHTML(item, section) {
   const { program = '', details = '', link = '' } = item;
   const hasLink = link && link.trim() !== '';
+  const isHymn = isHymnItem(program);
+  const hymnNumber = isHymn ? extractHymnNumber(details) : '';
 
   const div = document.createElement('div');
   div.className = 'program-item';
@@ -1300,12 +1381,56 @@ function createProgramItemHTML(item, section) {
       </div>
       <button type="button" class="remove-btn" title="Remove">&times;</button>
     </div>
-    <button type="button" class="add-link-btn ${hasLink ? 'hidden' : ''}">+ Add link</button>
-    <div class="link-row ${hasLink ? '' : 'hidden'}">
+    <div class="hymn-row ${isHymn ? '' : 'hidden'}">
+      <label class="hymn-label">Hymn #</label>
+      <input type="number" class="hymn-number" placeholder="123" min="1" max="9999" value="${hymnNumber}">
+      <span class="hymn-hint">Enter number to auto-link to churchofjesuschrist.org</span>
+    </div>
+    <button type="button" class="add-link-btn ${hasLink || isHymn ? 'hidden' : ''}">+ Add link</button>
+    <div class="link-row ${hasLink && !isHymn ? '' : 'hidden'}">
       <input type="text" class="item-link" placeholder="https://..." value="${escapeHtml(link)}">
       <button type="button" class="remove-link-btn" title="Remove link">&times;</button>
     </div>
   `;
+
+  const programInput = div.querySelector('.item-program');
+  const detailsInput = div.querySelector('.item-details');
+  const hymnRow = div.querySelector('.hymn-row');
+  const hymnNumberInput = div.querySelector('.hymn-number');
+  const addLinkBtn = div.querySelector('.add-link-btn');
+  const linkRow = div.querySelector('.link-row');
+  const linkInput = div.querySelector('.item-link');
+
+  // Watch for "hymn" being typed in the program field
+  programInput.addEventListener('input', () => {
+    const nowIsHymn = isHymnItem(programInput.value);
+    hymnRow.classList.toggle('hidden', !nowIsHymn);
+
+    if (nowIsHymn) {
+      // Hide manual link options when hymn mode is active
+      addLinkBtn.classList.add('hidden');
+      linkRow.classList.add('hidden');
+      // Try to extract number from details if present
+      const num = extractHymnNumber(detailsInput.value);
+      if (num && !hymnNumberInput.value) {
+        hymnNumberInput.value = num;
+      }
+    } else {
+      // Show add link button again if no link set
+      if (!linkInput.value) {
+        addLinkBtn.classList.remove('hidden');
+      }
+    }
+  });
+
+  // When hymn number changes, update details and link
+  hymnNumberInput.addEventListener('input', () => {
+    const num = hymnNumberInput.value;
+    if (num) {
+      detailsInput.value = `#${num}`;
+      linkInput.value = getHymnLink(num);
+    }
+  });
 
   // Remove item button with confirmation
   div.querySelector('.remove-btn').addEventListener('click', () => {
