@@ -2102,11 +2102,12 @@ async function init() {
   initNavigation();
   initModal();
 
-  await loadWardInfo();
-
+  // Load Firebase data (program & events) immediately - it's faster
+  // Load Google Sheets ward info in parallel - don't block on it
   const results = await Promise.allSettled([
     loadProgram(),
-    loadEvents()
+    loadEvents(),
+    loadWardInfo()
   ]);
 
   results.forEach((result) => {
