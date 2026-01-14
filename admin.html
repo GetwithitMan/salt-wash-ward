@@ -1440,10 +1440,6 @@ function createProgramItemHTML(item, section) {
   });
 
   // Add link button
-  const addLinkBtn = div.querySelector('.add-link-btn');
-  const linkRow = div.querySelector('.link-row');
-  const linkInput = div.querySelector('.item-link');
-
   addLinkBtn.addEventListener('click', () => {
     addLinkBtn.classList.add('hidden');
     linkRow.classList.remove('hidden');
