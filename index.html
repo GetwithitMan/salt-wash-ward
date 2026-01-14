@@ -1872,6 +1872,22 @@ function renderProgram(rows) {
           j++;
         }
         i = j - 1;
+      } else if (sectionName === 'testimony') {
+        // Add testimony meeting card
+        const testimonyCard = document.createElement('article');
+        testimonyCard.className = 'program-card testimony-card';
+        testimonyCard.setAttribute('role', 'listitem');
+
+        const testimonyHeading = document.createElement('p');
+        testimonyHeading.className = 'program-title';
+        testimonyHeading.textContent = 'Fast & Testimony Meeting';
+
+        const testimonyDetail = document.createElement('p');
+        testimonyDetail.className = 'program-detail';
+        testimonyDetail.textContent = details.trim() || 'Members of the congregation are invited to share their testimonies.';
+
+        testimonyCard.append(testimonyHeading, testimonyDetail);
+        cards.push(testimonyCard);
       }
       continue;
     }

@@ -708,6 +708,64 @@ main {
   font-weight: 600;
 }
 
+/* Meeting Type Toggle */
+.meeting-type-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.toggle-label {
+  font-weight: 600;
+  color: var(--ink-muted);
+  transition: color var(--transition);
+}
+
+.toggle-label.active {
+  color: var(--accent);
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: background var(--transition);
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 24px;
+  width: 24px;
+  left: 4px;
+  bottom: 4px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(28px);
+}
+
 /* Mobile labels - hidden on desktop */
 .mobile-label {
   display: none;
@@ -1024,8 +1082,44 @@ main {
         </div>
       </div>
 
+      <!-- Meeting Type Toggle -->
+      <div class="section-card collapsed" data-section="meeting-type">
+        <div class="section-header">
+          <h2 class="section-title">Meeting Type</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <div class="meeting-type-toggle">
+            <span class="toggle-label" data-for="speakers">Speakers</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="testimony-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" data-for="testimony">Testimony Meeting</span>
+          </div>
+          <p class="form-hint" style="margin-top: 0.75rem; text-align: center;">Toggle to switch between regular speakers and fast & testimony meeting.</p>
+        </div>
+      </div>
+
+      <!-- Testimony Section (hidden by default) -->
+      <div class="section-card collapsed" data-section="testimony" id="testimony-section" hidden>
+        <div class="section-header">
+          <h2 class="section-title">Testimony Meeting</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <div class="form-group">
+            <label class="form-label">Testimony Meeting Message</label>
+            <textarea id="testimony-message" class="form-textarea" placeholder="Members of the congregation are invited to share their testimonies..."></textarea>
+          </div>
+          <div class="section-actions">
+            <button type="button" class="btn success section-save-btn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Speakers Section -->
-      <div class="section-card collapsed" data-section="speakers">
+      <div class="section-card collapsed" data-section="speakers" id="speakers-section">
         <div class="section-header">
           <h2 class="section-title">Speakers</h2>
           <span class="section-toggle">▼</span>
@@ -1143,6 +1237,13 @@ const sections = {
 // Current program data
 let programData = [];
 let eventsData = [];
+let isTestimonyMeeting = false;
+
+// Testimony toggle elements
+const testimonyToggle = document.getElementById('testimony-toggle');
+const testimonySection = document.getElementById('testimony-section');
+const speakersSection = document.getElementById('speakers-section');
+const testimonyMessage = document.getElementById('testimony-message');
 
 // === Theme Functions ===
 function applyTheme(theme) {
@@ -2156,6 +2257,7 @@ function renderProgram(data) {
 
   let currentSection = null;
   const introMessage = document.getElementById('intro-message');
+  let hasTestimonySection = false;
 
   for (let i = 0; i < data.length; i++) {
     const item = data[i];
@@ -2169,6 +2271,14 @@ function renderProgram(data) {
       if (sectionName === 'introduction' && introMessage) {
         introMessage.value = item.details || '';
       }
+
+      // Handle testimony section
+      if (sectionName === 'testimony') {
+        hasTestimonySection = true;
+        if (testimonyMessage) {
+          testimonyMessage.value = item.details || '';
+        }
+      }
       continue;
     }
 
@@ -2178,6 +2288,9 @@ function renderProgram(data) {
       sections[currentSection].appendChild(itemElement);
     }
   }
+
+  // Set testimony mode based on data
+  setTestimonyMode(hasTestimonySection);
 }
 
 // === Save Program to Firebase ===
@@ -2288,15 +2401,19 @@ function collectProgramData() {
     });
   });
 
-  // Speakers section
-  data.push({ program: '#SECTION: Speakers', details: '', link: '' });
-  sections.speakers.querySelectorAll('.program-item').forEach(item => {
-    data.push({
-      program: item.querySelector('.item-program')?.value || '',
-      details: item.querySelector('.item-details')?.value || '',
-      link: item.querySelector('.item-link')?.value || ''
+  // Testimony or Speakers section (depending on toggle)
+  if (isTestimonyMeeting) {
+    data.push({ program: '#SECTION: Testimony', details: testimonyMessage?.value || '', link: '' });
+  } else {
+    data.push({ program: '#SECTION: Speakers', details: '', link: '' });
+    sections.speakers.querySelectorAll('.program-item').forEach(item => {
+      data.push({
+        program: item.querySelector('.item-program')?.value || '',
+        details: item.querySelector('.item-details')?.value || '',
+        link: item.querySelector('.item-link')?.value || ''
+      });
     });
-  });
+  }
 
   // Closing section
   data.push({ program: '#SECTION: Closing', details: '', link: '' });
@@ -2336,12 +2453,75 @@ function initSaveButtons() {
   });
 }
 
+// === Testimony Toggle ===
+function initTestimonyToggle() {
+  if (!testimonyToggle) return;
+
+  // Update label highlighting
+  function updateLabels() {
+    const labels = document.querySelectorAll('.toggle-label');
+    labels.forEach(label => {
+      if (label.dataset.for === 'testimony') {
+        label.classList.toggle('active', isTestimonyMeeting);
+      } else {
+        label.classList.toggle('active', !isTestimonyMeeting);
+      }
+    });
+  }
+
+  testimonyToggle.addEventListener('change', () => {
+    isTestimonyMeeting = testimonyToggle.checked;
+
+    // Show/hide sections
+    if (isTestimonyMeeting) {
+      testimonySection.hidden = false;
+      speakersSection.hidden = true;
+      // Expand testimony section
+      testimonySection.classList.remove('collapsed');
+    } else {
+      testimonySection.hidden = true;
+      speakersSection.hidden = false;
+    }
+
+    updateLabels();
+  });
+
+  // Set initial state
+  updateLabels();
+}
+
+function setTestimonyMode(enabled) {
+  isTestimonyMeeting = enabled;
+  if (testimonyToggle) {
+    testimonyToggle.checked = enabled;
+  }
+
+  if (enabled) {
+    testimonySection.hidden = false;
+    speakersSection.hidden = true;
+  } else {
+    testimonySection.hidden = true;
+    speakersSection.hidden = false;
+  }
+
+  // Update labels
+  const labels = document.querySelectorAll('.toggle-label');
+  labels.forEach(label => {
+    if (label.dataset.for === 'testimony') {
+      label.classList.toggle('active', enabled);
+    } else {
+      label.classList.toggle('active', !enabled);
+    }
+  });
+}
+
 // === Initialize ===
 function init() {
   initTheme();
   initSectionToggles();
   initAddButtons();
   initSaveButtons();
+  initTestimonyToggle();
 
   if (checkAuth()) {
     loginScreen.hidden = true;
