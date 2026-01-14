@@ -612,18 +612,6 @@ main {
   font-size: 0.85rem;
 }
 
-/* Bottom Save Bar */
-.bottom-save-bar {
-  position: sticky;
-  bottom: 1rem;
-  padding: 1rem;
-  background: var(--surface);
-  border: 1px solid var(--stroke);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  margin-top: 1.5rem;
-}
-
 /* Program Grid (desktop) */
 .program-grid {
   grid-template-columns: 1fr 2fr auto !important;
@@ -1104,10 +1092,6 @@ main {
         </div>
       </div>
 
-      <!-- Bottom Save Button -->
-      <div class="bottom-save-bar">
-        <button id="bottom-save-btn" class="btn success full">Save All Changes</button>
-      </div>
     </div>
   </div>
 </main>
@@ -1728,18 +1712,11 @@ passwordInput.addEventListener('keypress', (e) => {
 logoutBtn.addEventListener('click', logout);
 saveBtn.addEventListener('click', saveProgram);
 
-// Section save buttons and bottom save button
+// Section save buttons
 function initSaveButtons() {
-  // Section save buttons
   document.querySelectorAll('.section-save-btn').forEach(btn => {
     btn.addEventListener('click', saveProgram);
   });
-
-  // Bottom save button
-  const bottomSaveBtn = document.getElementById('bottom-save-btn');
-  if (bottomSaveBtn) {
-    bottomSaveBtn.addEventListener('click', saveProgram);
-  }
 }
 
 // === Initialize ===
