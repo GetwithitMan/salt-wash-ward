@@ -703,10 +703,9 @@ main {
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
-.hymn-hint {
-  font-size: 0.75rem;
-  color: var(--ink-muted);
-  font-style: italic;
+.hymn-status {
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 /* Mobile labels - hidden on desktop */
@@ -867,11 +866,6 @@ main {
   /* Hymn row on mobile */
   .hymn-row {
     flex-wrap: wrap;
-  }
-
-  .hymn-hint {
-    flex-basis: 100%;
-    margin-top: 0.25rem;
   }
 
   /* Better link row on mobile */
@@ -1925,7 +1919,7 @@ function createProgramItemHTML(item, section) {
     <div class="hymn-row ${isHymn ? '' : 'hidden'}">
       <label class="hymn-label">Hymn #</label>
       <input type="number" class="hymn-number" placeholder="123" min="1" max="9999" value="${hymnNumber}">
-      <span class="hymn-hint">Enter number to auto-link to churchofjesuschrist.org</span>
+      <span class="hymn-status"></span>
     </div>
     <button type="button" class="add-link-btn ${hasLink || isHymn ? 'hidden' : ''}">+ Add link</button>
     <div class="link-row ${hasLink && !isHymn ? '' : 'hidden'}">
@@ -1938,9 +1932,27 @@ function createProgramItemHTML(item, section) {
   const detailsInput = div.querySelector('.item-details');
   const hymnRow = div.querySelector('.hymn-row');
   const hymnNumberInput = div.querySelector('.hymn-number');
+  const hymnStatus = div.querySelector('.hymn-status');
   const addLinkBtn = div.querySelector('.add-link-btn');
   const linkRow = div.querySelector('.link-row');
   const linkInput = div.querySelector('.item-link');
+
+  // Update hymn status display
+  function updateHymnStatus(num) {
+    if (!num) {
+      hymnStatus.textContent = '';
+      hymnStatus.style.color = '';
+      return;
+    }
+    const slug = hymnSlugs[parseInt(num, 10)];
+    if (slug) {
+      hymnStatus.textContent = '✓ Link ready';
+      hymnStatus.style.color = 'var(--success)';
+    } else {
+      hymnStatus.textContent = '? Unknown hymn';
+      hymnStatus.style.color = 'var(--warning)';
+    }
+  }
 
   // Watch for "hymn" being typed in the program field
   programInput.addEventListener('input', () => {
@@ -1955,6 +1967,8 @@ function createProgramItemHTML(item, section) {
       const num = extractHymnNumber(detailsInput.value);
       if (num && !hymnNumberInput.value) {
         hymnNumberInput.value = num;
+        updateHymnStatus(num);
+        linkInput.value = getHymnLink(num);
       }
     } else {
       // Show add link button again if no link set
@@ -1970,8 +1984,16 @@ function createProgramItemHTML(item, section) {
     if (num) {
       detailsInput.value = `#${num}`;
       linkInput.value = getHymnLink(num);
+      updateHymnStatus(num);
+    } else {
+      updateHymnStatus('');
     }
   });
+
+  // Initialize status if hymn number already present
+  if (hymnNumber) {
+    updateHymnStatus(hymnNumber);
+  }
 
   // Remove item button with confirmation
   div.querySelector('.remove-btn').addEventListener('click', () => {
