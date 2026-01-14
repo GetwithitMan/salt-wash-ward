@@ -477,14 +477,20 @@ main {
 }
 
 .program-item {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr auto;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 0.75rem;
   background: var(--surface-muted);
   border: 1px solid var(--stroke);
   border-radius: var(--radius-sm);
-  align-items: start;
+}
+
+.program-item-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .program-item input {
@@ -499,6 +505,54 @@ main {
 .program-item input:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.link-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.link-row.hidden {
+  display: none;
+}
+
+.link-row input {
+  flex: 1;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.add-link-btn {
+  font-size: 0.75rem;
+  color: var(--accent-strong);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.add-link-btn:hover {
+  background: var(--accent-soft);
+}
+
+.add-link-btn.hidden {
+  display: none;
+}
+
+.remove-link-btn {
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.remove-link-btn:hover {
+  color: var(--error);
 }
 
 .remove-btn {
@@ -549,7 +603,7 @@ main {
 
 /* Responsive */
 @media (max-width: 640px) {
-  .program-item {
+  .program-item-row {
     grid-template-columns: 1fr;
   }
 
@@ -826,24 +880,50 @@ function initSectionToggles() {
 // === Program Item Templates ===
 function createProgramItemHTML(item, section) {
   const { program = '', details = '', link = '' } = item;
+  const hasLink = link && link.trim() !== '';
 
   const div = document.createElement('div');
   div.className = 'program-item';
   div.dataset.section = section;
 
-  // All sections now have link field
+  // Placeholders based on section type
   const programPlaceholder = ['banner', 'announcements'].includes(section) ? 'Title' : 'Item (e.g., Opening Hymn)';
   const detailsPlaceholder = ['banner', 'announcements'].includes(section) ? 'Description' : 'Details (e.g., #123 or Name)';
 
   div.innerHTML = `
-    <input type="text" class="item-program" placeholder="${programPlaceholder}" value="${escapeHtml(program)}">
-    <input type="text" class="item-details" placeholder="${detailsPlaceholder}" value="${escapeHtml(details)}">
-    <input type="text" class="item-link" placeholder="Link (optional)" value="${escapeHtml(link)}">
-    <button type="button" class="remove-btn" title="Remove">&times;</button>
+    <div class="program-item-row">
+      <input type="text" class="item-program" placeholder="${programPlaceholder}" value="${escapeHtml(program)}">
+      <input type="text" class="item-details" placeholder="${detailsPlaceholder}" value="${escapeHtml(details)}">
+      <button type="button" class="remove-btn" title="Remove">&times;</button>
+    </div>
+    <button type="button" class="add-link-btn ${hasLink ? 'hidden' : ''}">+ Add link</button>
+    <div class="link-row ${hasLink ? '' : 'hidden'}">
+      <input type="text" class="item-link" placeholder="https://..." value="${escapeHtml(link)}">
+      <button type="button" class="remove-link-btn" title="Remove link">&times;</button>
+    </div>
   `;
 
+  // Remove item button
   div.querySelector('.remove-btn').addEventListener('click', () => {
     div.remove();
+  });
+
+  // Add link button
+  const addLinkBtn = div.querySelector('.add-link-btn');
+  const linkRow = div.querySelector('.link-row');
+  const linkInput = div.querySelector('.item-link');
+
+  addLinkBtn.addEventListener('click', () => {
+    addLinkBtn.classList.add('hidden');
+    linkRow.classList.remove('hidden');
+    linkInput.focus();
+  });
+
+  // Remove link button
+  div.querySelector('.remove-link-btn').addEventListener('click', () => {
+    linkInput.value = '';
+    linkRow.classList.add('hidden');
+    addLinkBtn.classList.remove('hidden');
   });
 
   return div;
