@@ -1874,6 +1874,34 @@ const hymnSlugs = {
   1209: "hark-the-herald-angels-sing"
 };
 
+// Convert slug to title case hymn name
+function getHymnName(hymnNumber) {
+  if (!hymnNumber) return '';
+  const num = parseInt(hymnNumber, 10);
+  const slug = hymnSlugs[num];
+  if (!slug) return '';
+
+  // Convert slug to title: "we-thank-thee-o-god-for-a-prophet" -> "We Thank Thee, O God, for a Prophet"
+  return slug
+    .split('-')
+    .map((word, i) => {
+      // Keep certain words lowercase unless first word
+      const lowercase = ['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'from', 'by', 'of', 'in'];
+      if (i > 0 && lowercase.includes(word)) return word;
+      // Capitalize first letter
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ')
+    // Fix common patterns
+    .replace(/ O /g, ', O ')
+    .replace(/ Tis /g, " 'Tis ")
+    .replace(/ Im /g, " I'm ")
+    .replace(/ Ill /g, " I'll ")
+    .replace(/ Whos /g, " Who's ")
+    .replace(/Dont /g, "Don't ")
+    .replace(/Cant /g, "Can't ");
+}
+
 // Generate hymn link from number
 function getHymnLink(hymnNumber) {
   if (!hymnNumber) return '';
@@ -1969,6 +1997,11 @@ function createProgramItemHTML(item, section) {
         hymnNumberInput.value = num;
         updateHymnStatus(num);
         linkInput.value = getHymnLink(num);
+        // Update details with hymn name if not already present
+        const hymnName = getHymnName(num);
+        if (hymnName && !detailsInput.value.includes('–')) {
+          detailsInput.value = `#${num} – ${hymnName}`;
+        }
       }
     } else {
       // Show add link button again if no link set
@@ -1982,7 +2015,12 @@ function createProgramItemHTML(item, section) {
   hymnNumberInput.addEventListener('input', () => {
     const num = hymnNumberInput.value;
     if (num) {
-      detailsInput.value = `#${num}`;
+      const hymnName = getHymnName(num);
+      if (hymnName) {
+        detailsInput.value = `#${num} – ${hymnName}`;
+      } else {
+        detailsInput.value = `#${num}`;
+      }
       linkInput.value = getHymnLink(num);
       updateHymnStatus(num);
     } else {
