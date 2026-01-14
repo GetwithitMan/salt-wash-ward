@@ -2027,11 +2027,32 @@ async function loadEvents() {
   if (SELECTORS.eventsSection?.hasAttribute('hidden')) return;
 
   try {
-    const response = await fetchWithFallback(CONFIG.EVENTS_URL);
-    const rows = parseCSV(await response.text());
+    let rows;
 
-    if (rows[0]?.[0]?.toLowerCase().includes('date')) {
-      rows.shift();
+    if (CONFIG.USE_FIREBASE_PROGRAM) {
+      // Load from Firebase
+      const snapshot = await get(ref(db, 'events'));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Convert Firebase format to rows format: [date, title, info, icon, link]
+        rows = data.map(item => [
+          item.date || '',
+          item.title || '',
+          item.info || '',
+          item.icon || '📅',
+          item.link || ''
+        ]);
+      } else {
+        rows = [];
+      }
+    } else {
+      // Load from Google Sheets (fallback)
+      const response = await fetchWithFallback(CONFIG.EVENTS_URL);
+      rows = parseCSV(await response.text());
+
+      if (rows[0]?.[0]?.toLowerCase().includes('date')) {
+        rows.shift();
+      }
     }
 
     renderEvents(rows);

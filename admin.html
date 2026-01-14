@@ -749,6 +749,19 @@ main {
           <button type="button" class="add-btn" data-add="announcements">+ Add Announcement</button>
         </div>
       </div>
+
+      <!-- Events Section -->
+      <div class="section-card" data-section="events">
+        <div class="section-header">
+          <h2 class="section-title">Upcoming Events</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <p class="form-hint" style="margin-bottom: 1rem;">Ward activities, service opportunities, and upcoming events.</p>
+          <div id="events-items" class="program-items"></div>
+          <button type="button" class="add-btn" data-add="events">+ Add Event</button>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -799,11 +812,13 @@ const sections = {
   sacrament: document.getElementById('sacrament-items'),
   speakers: document.getElementById('speakers-items'),
   closing: document.getElementById('closing-items'),
-  announcements: document.getElementById('announcements-items')
+  announcements: document.getElementById('announcements-items'),
+  events: document.getElementById('events-items')
 };
 
 // Current program data
 let programData = [];
+let eventsData = [];
 
 // === Theme Functions ===
 function applyTheme(theme) {
@@ -878,6 +893,55 @@ function initSectionToggles() {
 }
 
 // === Program Item Templates ===
+// === Event Item Template (different from program items) ===
+function createEventItemHTML(item) {
+  const { date = '', icon = '📅', title = '', info = '', link = '' } = item;
+  const hasLink = link && link.trim() !== '';
+
+  const div = document.createElement('div');
+  div.className = 'program-item event-item';
+
+  div.innerHTML = `
+    <div class="program-item-row" style="grid-template-columns: 1fr 60px 1.5fr 1fr auto;">
+      <input type="text" class="event-date" placeholder="Date (e.g., Every Wednesday)" value="${escapeHtml(date)}">
+      <input type="text" class="event-icon" placeholder="📅" value="${escapeHtml(icon)}" style="text-align: center;">
+      <input type="text" class="event-title" placeholder="Event Title" value="${escapeHtml(title)}">
+      <input type="text" class="event-info" placeholder="Time/Details" value="${escapeHtml(info)}">
+      <button type="button" class="remove-btn" title="Remove">&times;</button>
+    </div>
+    <button type="button" class="add-link-btn ${hasLink ? 'hidden' : ''}">+ Add link</button>
+    <div class="link-row ${hasLink ? '' : 'hidden'}">
+      <input type="text" class="event-link" placeholder="https://..." value="${escapeHtml(link)}">
+      <button type="button" class="remove-link-btn" title="Remove link">&times;</button>
+    </div>
+  `;
+
+  // Remove item button
+  div.querySelector('.remove-btn').addEventListener('click', () => {
+    div.remove();
+  });
+
+  // Add link button
+  const addLinkBtn = div.querySelector('.add-link-btn');
+  const linkRow = div.querySelector('.link-row');
+  const linkInput = div.querySelector('.event-link');
+
+  addLinkBtn.addEventListener('click', () => {
+    addLinkBtn.classList.add('hidden');
+    linkRow.classList.remove('hidden');
+    linkInput.focus();
+  });
+
+  // Remove link button
+  div.querySelector('.remove-link-btn').addEventListener('click', () => {
+    linkInput.value = '';
+    linkRow.classList.add('hidden');
+    addLinkBtn.classList.remove('hidden');
+  });
+
+  return div;
+}
+
 function createProgramItemHTML(item, section) {
   const { program = '', details = '', link = '' } = item;
   const hasLink = link && link.trim() !== '';
@@ -942,8 +1006,13 @@ function initAddButtons() {
       const section = btn.dataset.add;
       const container = sections[section];
       if (container) {
-        const item = createProgramItemHTML({ program: '', details: '', link: '' }, section);
-        container.appendChild(item);
+        if (section === 'events') {
+          const item = createEventItemHTML({ date: '', icon: '📅', title: '', info: '', link: '' });
+          container.appendChild(item);
+        } else {
+          const item = createProgramItemHTML({ program: '', details: '', link: '' }, section);
+          container.appendChild(item);
+        }
       }
     });
   });
@@ -954,21 +1023,44 @@ async function loadProgram() {
   showStatus('Loading program...', 'info');
 
   try {
-    const snapshot = await get(ref(db, 'sundayProgram'));
+    // Load both program and events in parallel
+    const [programSnapshot, eventsSnapshot] = await Promise.all([
+      get(ref(db, 'sundayProgram')),
+      get(ref(db, 'events'))
+    ]);
 
-    if (snapshot.exists()) {
-      programData = snapshot.val();
+    if (programSnapshot.exists()) {
+      programData = programSnapshot.val();
       renderProgram(programData);
-      showStatus('Program loaded successfully', 'success');
     } else {
       // Initialize with default structure
       programData = getDefaultProgram();
       renderProgram(programData);
-      showStatus('No existing program found. Starting fresh.', 'info');
     }
+
+    if (eventsSnapshot.exists()) {
+      eventsData = eventsSnapshot.val();
+      renderEvents(eventsData);
+    } else {
+      eventsData = [];
+    }
+
+    showStatus('Program loaded successfully', 'success');
   } catch (error) {
     console.error('Error loading program:', error);
     showStatus('Error loading program. Please try again.', 'error');
+  }
+}
+
+// === Render Events ===
+function renderEvents(events) {
+  sections.events.innerHTML = '';
+
+  if (Array.isArray(events)) {
+    events.forEach(event => {
+      const itemElement = createEventItemHTML(event);
+      sections.events.appendChild(itemElement);
+    });
   }
 }
 
@@ -1031,8 +1123,16 @@ async function saveProgram() {
 
   try {
     const newProgramData = collectProgramData();
-    await set(ref(db, 'sundayProgram'), newProgramData);
+    const newEventsData = collectEventsData();
+
+    // Save both in parallel
+    await Promise.all([
+      set(ref(db, 'sundayProgram'), newProgramData),
+      set(ref(db, 'events'), newEventsData)
+    ]);
+
     programData = newProgramData;
+    eventsData = newEventsData;
     showStatus('Program saved successfully!', 'success');
   } catch (error) {
     console.error('Error saving program:', error);
@@ -1040,6 +1140,21 @@ async function saveProgram() {
   } finally {
     saveBtn.disabled = false;
   }
+}
+
+// === Collect Events Data ===
+function collectEventsData() {
+  const events = [];
+  sections.events.querySelectorAll('.event-item').forEach(item => {
+    events.push({
+      date: item.querySelector('.event-date')?.value || '',
+      icon: item.querySelector('.event-icon')?.value || '📅',
+      title: item.querySelector('.event-title')?.value || '',
+      info: item.querySelector('.event-info')?.value || '',
+      link: item.querySelector('.event-link')?.value || ''
+    });
+  });
+  return events;
 }
 
 function collectProgramData() {
