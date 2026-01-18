@@ -7,244 +7,126 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fitty@2.3.6/dist/fitty.min.js"></script>
 <style>
+/* === BASE PRINT SETTINGS === */
 @page {
-  size: 11in 8.5in landscape;
+  size: 11in 8.5in; /* Landscape */
   margin: 0;
 }
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 12px;
-  line-height: 1.4;
-  color: #1a1a1a;
-  background: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  font-family: "Crimson Pro", "Georgia", serif;
+  background: #e8e8e8;
+  color: #333;
 }
 
+/* === SCREEN-ONLY CONTROLS === */
 .print-controls {
   position: fixed;
   top: 20px;
   right: 20px;
+  z-index: 1000;
   display: flex;
   gap: 10px;
-  z-index: 1000;
 }
 
 .print-btn {
+  background: #2c5530;
+  color: white;
+  border: none;
   padding: 12px 24px;
   font-size: 16px;
-  font-weight: 600;
-  border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.print-btn.primary {
-  background: #7c3aed;
-  color: white;
-}
-
-.print-btn.secondary {
-  background: #e5e7eb;
-  color: #374151;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .print-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: #1e3d22;
 }
 
-/* Page container */
-.page {
+.reload-btn {
+  background: #555;
+}
+
+.reload-btn:hover {
+  background: #333;
+}
+
+@media print {
+  .print-controls { display: none; }
+}
+
+/* === THE PHYSICAL SHEET === */
+.sheet {
+  background: white;
   width: 11in;
   height: 8.5in;
-  margin: 20px auto;
-  background: white;
   display: flex;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
   page-break-after: always;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  margin: 30px auto;
 }
 
-.page-half {
-  width: 5.5in;
-  height: 8.5in;
-  padding: 0.4in;
+@media print {
+  body { background: none; }
+  .sheet {
+    box-shadow: none;
+    margin: 0;
+  }
+}
+
+/* === LEFT & RIGHT HALVES (5.5in each) === */
+.half-page {
+  width: 50%;
+  height: 100%;
+  padding: 0.5in;
   display: flex;
   flex-direction: column;
+  position: relative;
   overflow: hidden;
 }
 
-.page-half.left {
+.left-side {
   border-right: 1px dashed #ccc;
 }
 
-/* Cover page (right side of page 1) */
-.cover {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+@media print {
+  .left-side { border-right: none; }
+}
+
+/* === PAGE 1: EVENTS (Left) + FRONT COVER (Right) === */
+
+/* Events section on back cover */
+.events-page {
+  padding: 0.5in;
+}
+
+.events-header {
+  font-family: "Playfair Display", serif;
+  font-size: 20pt;
+  font-weight: 700;
   text-align: center;
-  padding: 0.75in;
+  color: #2c5530;
+  margin-bottom: 0.25in;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #2c5530;
 }
 
-.cover-logo {
-  width: 100%;
-  max-width: 3.5in;
-  height: auto;
-  object-fit: contain;
-  margin-bottom: 1.5rem;
-}
-
-.cover-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 700;
-  color: #7c3aed;
-  margin-bottom: 0.5rem;
-}
-
-.cover-subtitle {
-  font-size: 18px;
-  color: #666;
-  margin-bottom: 1rem;
-}
-
-.cover-date {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 1.5rem;
-  background: #f3e8ff;
-  border-radius: 20px;
-}
-
-.cover-welcome {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.7;
-  max-width: 90%;
-}
-
-/* Section headers */
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #7c3aed;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e9d5ff;
-}
-
-/* Program content */
-.program-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.program-content {
-  flex: 1;
-}
-
-/* Section blocks for program */
-.section-block {
-  margin-bottom: 0.75rem;
-}
-
-.section-block .section-header {
-  font-weight: 700;
-  font-size: 13px;
-  color: #7c3aed;
-  margin-bottom: 0.25rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #e9d5ff;
-}
-
-.program-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.2rem 0;
-  font-size: 12px;
-}
-
-.row-label {
-  font-weight: 500;
-  color: #374151;
-}
-
-.row-name {
-  color: #666;
-  text-align: right;
-  max-width: 60%;
-}
-
-.row-name a {
-  color: #7c3aed;
-  text-decoration: none;
-}
-
-.empty-state {
-  color: #888;
-  font-style: italic;
-  padding: 1rem 0;
-}
-
-.program-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.25rem 0;
-  border-bottom: 1px dotted #e5e7eb;
-  font-size: 12px;
-}
-
-.program-item:last-child {
-  border-bottom: none;
-}
-
-.program-label {
-  font-weight: 500;
-  color: #374151;
-}
-
-.program-value {
-  color: #666;
-  text-align: right;
-  max-width: 60%;
-}
-
-.program-value a {
-  color: #7c3aed;
-  text-decoration: none;
-}
-
-/* Testimony meeting */
-.testimony-message {
-  font-style: italic;
-  color: #666;
-  padding: 1rem;
-  background: #faf5ff;
-  border-radius: 8px;
-  text-align: center;
-  font-size: 13px;
-}
-
-/* Events section */
 .event-item {
-  padding: 0.35rem 0;
-  border-bottom: 1px solid #f3f4f6;
-  font-size: 12px;
+  margin-bottom: 0.18in;
+  padding-bottom: 0.12in;
+  border-bottom: 1px solid #eee;
 }
 
 .event-item:last-child {
@@ -252,67 +134,109 @@ body {
 }
 
 .event-date {
+  font-size: 11pt;
+  color: #2c5530;
   font-weight: 600;
-  color: #7c3aed;
-  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .event-title {
-  font-weight: 500;
-  color: #374151;
+  font-size: 14pt;
+  font-weight: 600;
+  color: #222;
+  margin: 2px 0;
 }
 
 .event-info {
-  color: #666;
-  font-size: 12px;
+  font-size: 12pt;
+  color: #555;
+  line-height: 1.4;
 }
 
-/* Missionaries section */
-.missionaries-section {
-  margin-top: 0.75rem;
+/* Front cover with logo */
+.front-cover {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(180deg, #f9f9f9 0%, #fff 100%);
+  padding: 0.4in;
 }
 
-.missionary-item {
-  padding: 0.35rem 0;
-  border-bottom: 1px solid #f3f4f6;
-  font-size: 12px;
+.cover-logo {
+  width: 3.5in;
+  height: auto;
+  max-height: 2.5in;
+  object-fit: contain;
+  margin-bottom: 0.25in;
 }
 
-.missionary-item:last-child {
-  border-bottom: none;
-}
-
-.missionary-type {
-  font-size: 10px;
-  font-weight: 600;
+.cover-badge {
+  font-size: 11pt;
   text-transform: uppercase;
-  color: #7c3aed;
-  background: #f3e8ff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 2px;
+  letter-spacing: 2px;
+  color: #2c5530;
+  margin-bottom: 0.15in;
 }
 
-.missionary-name {
+.cover-title {
+  font-family: "Playfair Display", serif;
+  font-size: 42pt;
   font-weight: 600;
-  color: #374151;
+  margin: 0 0 0.1in 0;
+  color: #1a1a1a;
 }
 
-.missionary-location {
-  color: #666;
-  font-size: 12px;
+.cover-subtitle {
+  font-size: 16pt;
+  color: #555;
+  margin: 0 0 0.15in 0;
 }
 
-.missionary-contact {
-  font-size: 11px;
-  color: #888;
+.cover-date {
+  font-size: 14pt;
+  color: #2c5530;
+  font-weight: 500;
 }
 
-/* Announcements */
+.cover-welcome {
+  font-size: 12pt;
+  color: #444;
+  margin: 0.2in 0 0 0;
+  line-height: 1.5;
+  font-style: italic;
+  max-width: 4in;
+}
+
+.cover-divider {
+  width: 1.5in;
+  height: 2px;
+  background: #2c5530;
+  margin: 0.25in auto;
+}
+
+/* === PAGE 2: ANNOUNCEMENTS (Left) + PROGRAM (Right) === */
+
+/* Announcements section */
+.announcements-page {
+  padding: 0.5in;
+}
+
+.announcements-header {
+  font-family: "Playfair Display", serif;
+  font-size: 20pt;
+  font-weight: 600;
+  text-align: center;
+  color: #2c5530;
+  margin-bottom: 0.25in;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #2c5530;
+}
+
 .announcement-item {
-  padding: 0.35rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 0.18in;
+  padding-bottom: 0.12in;
+  border-bottom: 1px solid #eee;
 }
 
 .announcement-item:last-child {
@@ -320,90 +244,213 @@ body {
 }
 
 .announcement-title {
+  font-size: 14pt;
   font-weight: 600;
-  color: #374151;
-  font-size: 13px;
+  color: #222;
+  margin-bottom: 2px;
 }
 
 .announcement-description {
-  color: #666;
-  font-size: 12px;
-  margin-top: 0.25rem;
+  font-size: 12pt;
+  color: #555;
+  line-height: 1.4;
 }
 
-/* Loading state */
+/* Program section (full right side) */
+.program-page {
+  padding: 0.4in 0.5in;
+}
+
+.program-header {
+  font-family: "Playfair Display", serif;
+  font-size: 22pt;
+  font-weight: 600;
+  text-align: center;
+  color: #2c5530;
+  margin-bottom: 0.18in;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #2c5530;
+}
+
+/* === SECTION STYLING === */
+.section-block {
+  margin-bottom: 0.12in;
+}
+
+.section-header {
+  font-family: "Playfair Display", serif;
+  font-size: 15pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #2c5530;
+  border-bottom: 1px solid #2c5530;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+
+/* === PROGRAM ROWS === */
+.program-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+  line-height: 1.35;
+}
+
+.row-label {
+  font-size: 16pt;
+  color: #333;
+  flex-shrink: 0;
+  margin-right: 8px;
+  min-width: 1.4in;
+}
+
+.row-name {
+  font-size: 16pt;
+  color: #111;
+  text-align: right;
+  white-space: nowrap;
+  flex: 1;
+  max-width: 2.8in;
+}
+
+/* === LOADING STATE === */
 .loading {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100%;
-  color: #666;
+  color: #999;
+  font-size: 12pt;
+}
+
+/* === TESTIMONY MEETING SPECIAL === */
+.testimony-message {
+  font-style: italic;
+  text-align: center;
+  padding: 0.12in 0.15in;
+  color: #444;
+  font-size: 10pt;
+  line-height: 1.4;
+  background: #f9f9f9;
+  border-radius: 4px;
+  margin: 0.1in 0;
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 1in 0;
+}
+
+/* === MISSIONARIES & MILITARY SECTION === */
+.missionaries-section {
+  margin-top: 0.3in;
+  padding-top: 0.2in;
+  border-top: 1px solid #ddd;
+}
+
+.missionaries-header {
+  font-family: "Playfair Display", serif;
+  font-size: 16pt;
+  font-weight: 600;
+  text-align: center;
+  color: #2c5530;
+  margin-bottom: 0.15in;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2c5530;
+}
+
+.missionary-item {
+  margin-bottom: 0.12in;
+  padding-bottom: 0.08in;
+  border-bottom: 1px solid #eee;
+}
+
+.missionary-item:last-child {
+  border-bottom: none;
+}
+
+.missionary-type {
+  font-size: 9pt;
+  color: #2c5530;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.missionary-name {
+  font-size: 13pt;
+  font-weight: 600;
+  color: #222;
+  margin: 1px 0;
+}
+
+.missionary-location {
+  font-size: 11pt;
+  color: #555;
   font-style: italic;
 }
 
-/* Print styles */
-@media print {
-  body {
-    background: white;
-  }
+.missionary-contact {
+  font-size: 10pt;
+  color: #666;
+  margin-top: 2px;
+  line-height: 1.3;
+}
 
-  .print-controls {
-    display: none !important;
-  }
-
-  .page {
-    margin: 0;
-    box-shadow: none;
-    page-break-after: always;
-  }
-
-  .page-half.left {
-    border-right: none;
-  }
+.missionary-contact a {
+  color: #2c5530;
+  text-decoration: none;
 }
 </style>
 </head>
 <body>
 
 <div class="print-controls">
-  <button class="print-btn secondary" onclick="location.reload()">Refresh</button>
-  <button class="print-btn primary" onclick="window.print()">Print Program</button>
+  <button class="print-btn reload-btn" onclick="location.reload()">Refresh Data</button>
+  <button class="print-btn" onclick="window.print()">Print Program</button>
 </div>
 
-<!-- Page 1: Cover (right) + Events/Missionaries (left) -->
-<div class="page" id="page1">
-  <div class="page-half left">
-    <h2 class="section-title">Upcoming Events</h2>
+<!-- Page 1 -->
+<div class="sheet" id="page1">
+  <div class="half-page left-side events-page">
+    <div class="events-header">Upcoming Events</div>
     <div id="events-loading" class="loading">Loading events...</div>
-    <div id="events-list" class="events-list"></div>
+    <div id="events-list"></div>
 
     <div id="missionaries-section" class="missionaries-section">
-      <h2 class="section-title">Missionaries &amp; Military</h2>
-      <div id="missionaries-list" class="missionary-list"></div>
+      <div class="missionaries-header">Missionaries &amp; Military</div>
+      <div id="missionaries-list"></div>
     </div>
   </div>
 
-  <div class="page-half right cover">
+  <div class="half-page front-cover">
     <img class="cover-logo" src="https://storage.googleapis.com/msgsndr/Y17ODAHcaxgHoS9kMX9v/media/680a878771b53cd35214434a.jpeg" alt="Salt Wash Ward" onerror="this.style.display='none'">
+    <div class="cover-badge">Sunday Worship</div>
     <h1 class="cover-title">Salt Wash Ward</h1>
     <p class="cover-subtitle">Sacrament Meeting Program</p>
+    <div class="cover-divider"></div>
     <p class="cover-date" id="program-date"></p>
     <p class="cover-welcome" id="cover-welcome">Welcome to the Salt Wash Ward.</p>
   </div>
 </div>
 
-<!-- Page 2: Announcements (left) + Program (right) -->
-<div class="page" id="page2">
-  <div class="page-half left">
-    <h2 class="section-title">Ward Announcements</h2>
+<!-- Page 2 -->
+<div class="sheet" id="page2">
+  <div class="half-page left-side announcements-page">
+    <div class="announcements-header">Announcements</div>
     <div id="announcements-loading" class="loading">Loading announcements...</div>
-    <div id="announcements-list" class="announcements-list"></div>
+    <div id="announcements-list"></div>
   </div>
 
-  <div class="page-half right program-section">
-    <h2 class="section-title">Sacrament Meeting</h2>
+  <div class="half-page program-page">
+    <div class="program-header">Sacrament Meeting</div>
     <div id="program-loading" class="loading">Loading program...</div>
-    <div id="program-content" class="program-content"></div>
+    <div id="program-content"></div>
   </div>
 </div>
 
@@ -411,7 +458,7 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
-// Firebase config (same as main site)
+// Firebase config (Salt Wash Ward)
 const firebaseConfig = {
   apiKey: "AIzaSyBYkgD6v0mAFfCDEm_X1lbPR7kh3H27ukg",
   authDomain: "salt-wash-ward-missionary.firebaseapp.com",
@@ -463,8 +510,8 @@ function createSectionHTML(title, items) {
   validItems.forEach(item => {
     html += `
       <div class="program-row">
-        <span class="row-label">${escapeHtml(item.label)}</span>
-        <span class="row-name">${escapeHtml(item.details)}</span>
+        <span class="row-label">${item.label || ''}</span>
+        <span class="row-name">${item.details || ''}</span>
       </div>`;
   });
 
@@ -540,7 +587,7 @@ async function loadProgram() {
 
     // Set the welcome/introduction message on front cover
     if (data && data.introduction) {
-      document.getElementById('cover-welcome').textContent = data.introduction || 'Welcome to the Salt Wash Ward.';
+      document.getElementById('cover-welcome').textContent = data.introduction;
     }
 
     if (!data || !data.sections) {
@@ -561,7 +608,7 @@ async function loadProgram() {
     // If testimony meeting, add special message instead of speakers
     if (data.isTestimonyMeeting) {
       if (data.testimonyMessage) {
-        programHTML += `<div class="testimony-message">${escapeHtml(data.testimonyMessage)}</div>`;
+        programHTML += `<div class="testimony-message">${data.testimonyMessage}</div>`;
       }
     } else {
       // Speakers/Program section
@@ -580,8 +627,8 @@ async function loadProgram() {
     // Apply fitty for auto-text-sizing
     setTimeout(() => {
       fitty('.row-name', {
-        minSize: 10,
-        maxSize: 14,
+        minSize: 12,
+        maxSize: 21,
         multiLine: false
       });
     }, 100);
@@ -620,8 +667,8 @@ function loadAnnouncements(announcements) {
   validAnnouncements.forEach(item => {
     html += `
       <div class="announcement-item">
-        <div class="announcement-title">${escapeHtml(item.label || 'Announcement')}</div>
-        <div class="announcement-description">${escapeHtml(item.details)}</div>
+        <div class="announcement-title">${item.label || 'Announcement'}</div>
+        <div class="announcement-description">${item.details || ''}</div>
       </div>`;
   });
 
@@ -656,9 +703,9 @@ async function loadEvents() {
     validEvents.forEach(event => {
       html += `
         <div class="event-item">
-          <div class="event-date">${escapeHtml(event.date || 'Date TBD')}</div>
-          <div class="event-title">${escapeHtml(event.title || 'Ward Event')}</div>
-          <div class="event-info">${escapeHtml(event.info)}</div>
+          <div class="event-date">${event.date || 'Date TBD'}</div>
+          <div class="event-title">${event.title || 'Ward Event'}</div>
+          <div class="event-info">${event.info || ''}</div>
         </div>`;
     });
 
@@ -698,12 +745,12 @@ async function loadMissionaries() {
       const typeLabel = person.type === 'military' ? 'Military' : 'Missionary';
       html += `
         <div class="missionary-item">
-          <div class="missionary-type">${escapeHtml(typeLabel)}</div>
-          <div class="missionary-name">${escapeHtml(person.name)}</div>
-          ${person.location ? `<div class="missionary-location">${escapeHtml(person.location)}</div>` : ''}
+          <div class="missionary-type">${typeLabel}</div>
+          <div class="missionary-name">${person.name || ''}</div>
+          ${person.location ? `<div class="missionary-location">${person.location}</div>` : ''}
           <div class="missionary-contact">
-            ${person.email ? `<div>Email: <a href="mailto:${escapeHtml(person.email)}">${escapeHtml(person.email)}</a></div>` : ''}
-            ${person.address ? `<div>${escapeHtml(person.address).replace(/\n/g, ', ')}</div>` : ''}
+            ${person.email ? `<div>Email: <a href="mailto:${person.email}">${person.email}</a></div>` : ''}
+            ${person.address ? `<div>${person.address.replace(/\n/g, ', ')}</div>` : ''}
           </div>
         </div>`;
     });
