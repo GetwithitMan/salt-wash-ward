@@ -114,7 +114,7 @@ body {
 
 .events-header {
   font-family: "Playfair Display", serif;
-  font-size: 20pt;
+  font-size: 18pt;
   font-weight: 700;
   text-align: center;
   color: #2c5530;
@@ -164,9 +164,9 @@ body {
 }
 
 .cover-logo {
-  width: 3.5in;
+  width: 50%;
   height: auto;
-  max-height: 2.5in;
+  max-height: 2in;
   object-fit: contain;
   margin-bottom: 0.25in;
 }
@@ -181,14 +181,14 @@ body {
 
 .cover-title {
   font-family: "Playfair Display", serif;
-  font-size: 42pt;
+  font-size: 32pt;
   font-weight: 600;
   margin: 0 0 0.1in 0;
   color: #1a1a1a;
 }
 
 .cover-subtitle {
-  font-size: 16pt;
+  font-size: 14pt;
   color: #555;
   margin: 0 0 0.15in 0;
 }
@@ -224,7 +224,7 @@ body {
 
 .announcements-header {
   font-family: "Playfair Display", serif;
-  font-size: 20pt;
+  font-size: 18pt;
   font-weight: 600;
   text-align: center;
   color: #2c5530;
@@ -258,35 +258,35 @@ body {
 
 /* Program section (full right side) */
 .program-page {
-  padding: 0.35in 0.4in;
+  padding: 0.4in 0.5in;
 }
 
 .program-header {
   font-family: "Playfair Display", serif;
-  font-size: 18pt;
+  font-size: 20pt;
   font-weight: 600;
   text-align: center;
   color: #2c5530;
-  margin-bottom: 0.12in;
-  padding-bottom: 4px;
+  margin-bottom: 0.18in;
+  padding-bottom: 6px;
   border-bottom: 2px solid #2c5530;
 }
 
 /* === SECTION STYLING === */
 .section-block {
-  margin-bottom: 0.08in;
+  margin-bottom: 0.12in;
 }
 
 .section-header {
   font-family: "Playfair Display", serif;
-  font-size: 11pt;
+  font-size: 15pt;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   color: #2c5530;
   border-bottom: 1px solid #2c5530;
-  padding-bottom: 1px;
-  margin-bottom: 2px;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 /* === PROGRAM ROWS === */
@@ -294,20 +294,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 2px;
-  line-height: 1.25;
+  margin-bottom: 5px;
+  line-height: 1.35;
 }
 
 .row-label {
-  font-size: 11pt;
+  font-size: 14pt;
   color: #333;
   flex-shrink: 0;
-  margin-right: 6px;
+  margin-right: 8px;
   min-width: 1.2in;
 }
 
 .row-name {
-  font-size: 11pt;
+  font-size: 14pt;
   color: #111;
   text-align: right;
   white-space: nowrap;
@@ -627,7 +627,7 @@ async function loadProgram() {
     // Apply fitty for auto-text-sizing
     setTimeout(() => {
       fitty('.row-name', {
-        minSize: 9,
+        minSize: 11,
         maxSize: 14,
         multiLine: false
       });
