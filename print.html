@@ -154,8 +154,8 @@ body {
   flex-direction: column;
 }
 
-.program-list {
-  list-style: none;
+.program-content {
+  flex: 1;
 }
 
 /* Section blocks for program */
@@ -241,10 +241,6 @@ body {
 }
 
 /* Events section */
-.events-list {
-  list-style: none;
-}
-
 .event-item {
   padding: 0.5rem 0;
   border-bottom: 1px solid #f3f4f6;
@@ -274,10 +270,6 @@ body {
 /* Missionaries section */
 .missionaries-section {
   margin-top: 1rem;
-}
-
-.missionary-list {
-  list-style: none;
 }
 
 .missionary-item {
@@ -318,10 +310,6 @@ body {
 }
 
 /* Announcements */
-.announcements-list {
-  list-style: none;
-}
-
 .announcement-item {
   padding: 0.5rem 0;
   border-bottom: 1px solid #f3f4f6;
@@ -337,7 +325,7 @@ body {
   font-size: 14px;
 }
 
-.announcement-desc {
+.announcement-description {
   color: #666;
   font-size: 13px;
   margin-top: 0.25rem;
@@ -386,15 +374,12 @@ body {
 <div class="page" id="page1">
   <div class="page-half left">
     <h2 class="section-title">Upcoming Events</h2>
-    <ul class="events-list" id="events-list">
-      <li class="loading">Loading events...</li>
-    </ul>
+    <div id="events-loading" class="loading">Loading events...</div>
+    <div id="events-list" class="events-list"></div>
 
-    <div class="missionaries-section">
+    <div id="missionaries-section" class="missionaries-section">
       <h2 class="section-title">Missionaries &amp; Military</h2>
-      <ul class="missionary-list" id="missionaries-list">
-        <li class="loading">Loading...</li>
-      </ul>
+      <div id="missionaries-list" class="missionary-list"></div>
     </div>
   </div>
 
@@ -402,7 +387,7 @@ body {
     <img class="cover-logo" src="https://storage.googleapis.com/msgsndr/Y17ODAHcaxgHoS9kMX9v/media/680a878771b53cd35214434a.jpeg" alt="Salt Wash Ward" onerror="this.style.display='none'">
     <h1 class="cover-title">Salt Wash Ward</h1>
     <p class="cover-subtitle">Sacrament Meeting Program</p>
-    <p class="cover-date" id="cover-date"></p>
+    <p class="cover-date" id="program-date"></p>
     <p class="cover-welcome" id="cover-welcome">Welcome to the Salt Wash Ward.</p>
   </div>
 </div>
@@ -411,24 +396,22 @@ body {
 <div class="page" id="page2">
   <div class="page-half left">
     <h2 class="section-title">Ward Announcements</h2>
-    <ul class="announcements-list" id="announcements-list">
-      <li class="loading">Loading announcements...</li>
-    </ul>
+    <div id="announcements-loading" class="loading">Loading announcements...</div>
+    <div id="announcements-list" class="announcements-list"></div>
   </div>
 
   <div class="page-half right program-section">
     <h2 class="section-title">Sacrament Meeting</h2>
-    <ul class="program-list" id="program-list">
-      <li class="loading">Loading program...</li>
-    </ul>
+    <div id="program-loading" class="loading">Loading program...</div>
+    <div id="program-content" class="program-content"></div>
   </div>
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
-// Firebase Configuration
+// Firebase config (same as main site)
 const firebaseConfig = {
   apiKey: "AIzaSyBYkgD6v0mAFfCDEm_X1lbPR7kh3H27ukg",
   authDomain: "salt-wash-ward-missionary.firebaseapp.com",
@@ -439,8 +422,8 @@ const firebaseConfig = {
   appId: "1:655176347538:web:fe919cb904eba9eb151b4b"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
 
 // Get current Sunday's date
 function getCurrentSunday() {
@@ -467,15 +450,10 @@ function createSectionHTML(title, items) {
     <div class="section-header">${title}</div>`;
 
   validItems.forEach(item => {
-    const link = item.link?.trim();
-    const detailsHtml = (link && link.startsWith('http'))
-      ? `<a href="${link}" target="_blank">${item.details || ''}</a>`
-      : (item.details || '');
-
     html += `
       <div class="program-row">
         <span class="row-label">${item.label || ''}</span>
-        <span class="row-name">${detailsHtml}</span>
+        <span class="row-name">${item.details || ''}</span>
       </div>`;
   });
 
@@ -483,73 +461,82 @@ function createSectionHTML(title, items) {
   return html;
 }
 
-// Render program (new structured format)
-function renderProgram(data) {
-  const list = document.getElementById('program-list');
-  list.innerHTML = '';
+// Load and render the program
+async function loadProgram() {
+  try {
+    const snapshot = await get(ref(db, 'sundayProgram'));
+    const data = snapshot.val();
 
-  // Set the date
-  document.getElementById('cover-date').textContent = getCurrentSunday();
+    // Set the date
+    document.getElementById('program-date').textContent = getCurrentSunday();
 
-  // Set the welcome/introduction message on front cover
-  if (data && data.introduction) {
-    document.getElementById('cover-welcome').textContent = data.introduction;
-  }
-
-  if (!data || !data.sections) {
-    list.innerHTML = '<li class="empty-state">No program data available.</li>';
-    return;
-  }
-
-  // Build the full program
-  let programHTML = '';
-
-  // Opening section
-  programHTML += createSectionHTML('Opening', data.sections.opening);
-
-  // Sacrament section
-  programHTML += createSectionHTML('Sacrament', data.sections.sacrament);
-
-  // If testimony meeting, add special message instead of speakers
-  if (data.isTestimonyMeeting) {
-    if (data.testimonyMessage) {
-      programHTML += `<div class="testimony-message">${data.testimonyMessage}</div>`;
-    } else {
-      programHTML += `<div class="testimony-message">Members of the congregation are invited to bear their testimonies.</div>`;
+    // Set the welcome/introduction message on front cover
+    if (data && data.introduction) {
+      document.getElementById('cover-welcome').textContent = data.introduction;
     }
-  } else {
-    // Speakers/Program section
-    programHTML += createSectionHTML('Program', data.sections.speakers);
-  }
 
-  // Closing section
-  programHTML += createSectionHTML('Closing', data.sections.closing);
+    if (!data || !data.sections) {
+      document.getElementById('program-loading').style.display = 'none';
+      document.getElementById('program-content').innerHTML = '<p class="empty-state">No program data available.</p>';
+      return;
+    }
 
-  list.innerHTML = programHTML || '<li class="empty-state">No program data available.</li>';
+    // Build the full program
+    let programHTML = '';
 
-  // Apply fitty for auto-text-sizing
-  setTimeout(() => {
-    if (typeof fitty !== 'undefined') {
+    // Opening section
+    programHTML += createSectionHTML('Opening', data.sections.opening);
+
+    // Sacrament section
+    programHTML += createSectionHTML('Sacrament', data.sections.sacrament);
+
+    // If testimony meeting, add special message instead of speakers
+    if (data.isTestimonyMeeting) {
+      if (data.testimonyMessage) {
+        programHTML += `<div class="testimony-message">${data.testimonyMessage}</div>`;
+      }
+    } else {
+      // Speakers/Program section
+      programHTML += createSectionHTML('Program', data.sections.speakers);
+    }
+
+    // Closing section
+    programHTML += createSectionHTML('Closing', data.sections.closing);
+
+    document.getElementById('program-loading').style.display = 'none';
+    document.getElementById('program-content').innerHTML = programHTML || '<p class="empty-state">No program data available.</p>';
+
+    // Load announcements from the program data
+    loadAnnouncements(data.sections.announcements);
+
+    // Apply fitty for auto-text-sizing
+    setTimeout(() => {
       fitty('.row-name', {
         minSize: 12,
         maxSize: 16,
         multiLine: false
       });
-    }
-  }, 100);
+    }, 100);
+
+  } catch (error) {
+    console.error('Failed to load program:', error);
+    document.getElementById('program-loading').style.display = 'none';
+    document.getElementById('program-content').innerHTML = '<p class="empty-state">Unable to load program.</p>';
+    document.getElementById('program-date').textContent = getCurrentSunday();
+  }
 }
 
-// Render announcements (new structured format)
-function renderAnnouncements(data) {
-  const list = document.getElementById('announcements-list');
-  list.innerHTML = '';
+// Load announcements
+function loadAnnouncements(announcements) {
+  const container = document.getElementById('announcements-list');
+  const loading = document.getElementById('announcements-loading');
 
-  if (!data || !data.sections || !data.sections.announcements) {
-    list.innerHTML = '<li style="color: #888; font-style: italic;">No announcements this week.</li>';
+  loading.style.display = 'none';
+
+  if (!announcements || announcements.length === 0) {
+    container.innerHTML = '<p class="empty-state">No announcements this week.</p>';
     return;
   }
-
-  const announcements = data.sections.announcements;
 
   // Filter out empty announcements
   const validAnnouncements = announcements.filter(a =>
@@ -557,7 +544,7 @@ function renderAnnouncements(data) {
   );
 
   if (validAnnouncements.length === 0) {
-    list.innerHTML = '<li style="color: #888; font-style: italic;">No announcements this week.</li>';
+    container.innerHTML = '<p class="empty-state">No announcements this week.</p>';
     return;
   }
 
@@ -566,119 +553,112 @@ function renderAnnouncements(data) {
     html += `
       <div class="announcement-item">
         <div class="announcement-title">${item.label || 'Announcement'}</div>
-        <div class="announcement-desc">${item.details || ''}</div>
+        <div class="announcement-description">${item.details || ''}</div>
       </div>`;
   });
 
-  list.innerHTML = html;
+  container.innerHTML = html;
 }
 
-// Render events
-function renderEvents(events) {
-  const list = document.getElementById('events-list');
-  list.innerHTML = '';
+// Load events from Firebase
+async function loadEvents() {
+  const container = document.getElementById('events-list');
+  const loading = document.getElementById('events-loading');
 
-  if (!events || events.length === 0) {
-    list.innerHTML = '<li style="color: #888; font-style: italic;">No upcoming events.</li>';
-    return;
-  }
-
-  // Filter out expired one-time events
-  const now = new Date();
-  const validEvents = events.filter(event => {
-    if (event.type === 'one-time' && event.date) {
-      const eventDate = new Date(event.date);
-      if (!isNaN(eventDate.getTime())) {
-        const endOfDay = new Date(eventDate);
-        endOfDay.setDate(endOfDay.getDate() + 1);
-        return endOfDay >= now;
-      }
-    }
-    return true;
-  });
-
-  validEvents.forEach(event => {
-    const li = document.createElement('li');
-    li.className = 'event-item';
-
-    li.innerHTML = `
-      <div class="event-date">${event.date || 'TBD'}</div>
-      <div class="event-title">${event.title || 'Event'}</div>
-      ${event.info ? `<div class="event-info">${event.info}</div>` : ''}
-    `;
-
-    list.appendChild(li);
-  });
-}
-
-// Render missionaries
-function renderMissionaries(missionaries) {
-  const list = document.getElementById('missionaries-list');
-  list.innerHTML = '';
-
-  if (!missionaries || missionaries.length === 0) {
-    list.innerHTML = '<li style="color: #888; font-style: italic;">No missionaries or military listed.</li>';
-    return;
-  }
-
-  missionaries.forEach(person => {
-    const li = document.createElement('li');
-    li.className = 'missionary-item';
-
-    const typeLabel = person.type === 'military' ? 'Military' : 'Missionary';
-
-    li.innerHTML = `
-      <span class="missionary-type">${typeLabel}</span>
-      <div class="missionary-name">${person.name}</div>
-      ${person.location ? `<div class="missionary-location">${person.location}</div>` : ''}
-      ${person.email ? `<div class="missionary-contact">${person.email}</div>` : ''}
-    `;
-
-    list.appendChild(li);
-  });
-}
-
-// Load all data
-async function loadData() {
   try {
-    const [programSnap, eventsSnap, missionariesSnap] = await Promise.all([
-      get(ref(db, 'sundayProgram')),
-      get(ref(db, 'events')),
-      get(ref(db, 'missionaries'))
-    ]);
+    const snapshot = await get(ref(db, 'events'));
+    const data = snapshot.val();
 
-    if (programSnap.exists()) {
-      const data = programSnap.val();
-      renderProgram(data);
-      renderAnnouncements(data);
+    loading.style.display = 'none';
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      container.innerHTML = '<p class="empty-state">No upcoming events.</p>';
+      return;
     }
 
-    if (eventsSnap.exists()) {
-      renderEvents(eventsSnap.val());
-    } else {
-      renderEvents([]);
+    // Filter out empty events
+    const validEvents = data.filter(e => e.title || e.info);
+
+    if (validEvents.length === 0) {
+      container.innerHTML = '<p class="empty-state">No upcoming events.</p>';
+      return;
     }
 
-    if (missionariesSnap.exists()) {
-      renderMissionaries(missionariesSnap.val());
-    } else {
-      renderMissionaries([]);
-    }
+    let html = '';
+    validEvents.forEach(event => {
+      html += `
+        <div class="event-item">
+          <div class="event-date">${event.date || 'Date TBD'}</div>
+          <div class="event-title">${event.title || 'Ward Event'}</div>
+          <div class="event-info">${event.info || ''}</div>
+        </div>`;
+    });
 
-    // Apply fitty for auto-sizing text
-    if (typeof fitty !== 'undefined') {
-      fitty('.cover-title', { maxSize: 32, minSize: 20 });
-      fitty('.cover-welcome', { maxSize: 14, minSize: 10 });
-    }
+    container.innerHTML = html;
 
   } catch (error) {
-    console.error('Error loading data:', error);
+    console.error('Failed to load events:', error);
+    loading.style.display = 'none';
+    container.innerHTML = '<p class="empty-state">Unable to load events.</p>';
+  }
+}
+
+// Load missionaries/military from Firebase
+async function loadMissionaries() {
+  const section = document.getElementById('missionaries-section');
+  const container = document.getElementById('missionaries-list');
+
+  try {
+    const snapshot = await get(ref(db, 'missionaries'));
+    const data = snapshot.val();
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    // Filter out empty entries
+    const validMissionaries = data.filter(m => m.name && m.name.trim());
+
+    if (validMissionaries.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    let html = '';
+    validMissionaries.forEach(person => {
+      const typeLabel = person.type === 'military' ? 'Military' : 'Missionary';
+      html += `
+        <div class="missionary-item">
+          <div class="missionary-type">${typeLabel}</div>
+          <div class="missionary-name">${person.name || ''}</div>
+          ${person.location ? `<div class="missionary-location">${person.location}</div>` : ''}
+          <div class="missionary-contact">
+            ${person.email ? `<div>Email: <a href="mailto:${person.email}">${person.email}</a></div>` : ''}
+            ${person.address ? `<div>${person.address.replace(/\n/g, ', ')}</div>` : ''}
+          </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+    section.style.display = 'block';
+
+  } catch (error) {
+    console.error('Failed to load missionaries:', error);
+    section.style.display = 'none';
   }
 }
 
 // Initialize
-setDate();
-loadData();
+async function init() {
+  await Promise.all([
+    loadProgram(),
+    loadEvents(),
+    loadMissionaries()
+  ]);
+}
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>

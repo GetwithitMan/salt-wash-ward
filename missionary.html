@@ -816,14 +816,13 @@ main {
   </div>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
-<script>
+<script type="module">
 // ===========================================
 // FIREBASE CONFIGURATION
 // ===========================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove, child } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBYkgD6v0mAFfCDEm_X1lbPR7kh3H27ukg",
   authDomain: "salt-wash-ward-missionary.firebaseapp.com",
@@ -835,9 +834,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const signupsRef = database.ref('missionary-dinners');
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const signupsRef = ref(db, 'missionary-dinners');
 
 // ===========================================
 // STATE
@@ -1041,11 +1040,11 @@ function closeModal() {
 // FIREBASE OPERATIONS
 // ===========================================
 function saveSignup(dateKey, data) {
-  return signupsRef.child(dateKey).set(data);
+  return set(child(signupsRef, dateKey), data);
 }
 
 function removeSignup(dateKey) {
-  return signupsRef.child(dateKey).remove();
+  return remove(child(signupsRef, dateKey));
 }
 
 function cleanupOldSignups() {
@@ -1149,7 +1148,7 @@ function init() {
   initTheme();
 
   // Listen for realtime updates from Firebase
-  signupsRef.on('value', (snapshot) => {
+  onValue(signupsRef, (snapshot) => {
     signups = snapshot.val() || {};
     renderCalendar();
     cleanupOldSignups();
