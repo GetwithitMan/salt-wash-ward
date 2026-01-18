@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Print Program – Salt Wash Ward</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fitty@2.3.6/dist/fitty.min.js"></script>
+<style>
+@page {
+  size: 11in 8.5in landscape;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+.print-controls {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.print-btn {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.print-btn.primary {
+  background: #7c3aed;
+  color: white;
+}
+
+.print-btn.secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.print-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Page container */
+.page {
+  width: 11in;
+  height: 8.5in;
+  margin: 20px auto;
+  background: white;
+  display: flex;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  page-break-after: always;
+}
+
+.page-half {
+  width: 5.5in;
+  height: 8.5in;
+  padding: 0.5in;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-half.left {
+  border-right: 1px dashed #ccc;
+}
+
+/* Cover page (right side of page 1) */
+.cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.75in;
+}
+
+.cover-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.cover-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 0.5rem;
+}
+
+.cover-subtitle {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.cover-date {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 2rem;
+  padding: 0.5rem 1.5rem;
+  background: #f3e8ff;
+  border-radius: 20px;
+}
+
+.cover-welcome {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.7;
+  max-width: 90%;
+}
+
+/* Section headers */
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9d5ff;
+}
+
+/* Program content */
+.program-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.program-list {
+  list-style: none;
+}
+
+.program-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px dotted #e5e7eb;
+  font-size: 14px;
+}
+
+.program-item:last-child {
+  border-bottom: none;
+}
+
+.program-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.program-value {
+  color: #666;
+  text-align: right;
+  max-width: 60%;
+}
+
+.program-value a {
+  color: #7c3aed;
+  text-decoration: none;
+}
+
+/* Testimony meeting */
+.testimony-message {
+  font-style: italic;
+  color: #666;
+  padding: 1rem;
+  background: #faf5ff;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Events section */
+.events-list {
+  list-style: none;
+}
+
+.event-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+}
+
+.event-item:last-child {
+  border-bottom: none;
+}
+
+.event-date {
+  font-weight: 600;
+  color: #7c3aed;
+  font-size: 12px;
+}
+
+.event-title {
+  font-weight: 500;
+  color: #374151;
+}
+
+.event-info {
+  color: #666;
+  font-size: 12px;
+}
+
+/* Missionaries section */
+.missionaries-section {
+  margin-top: 1rem;
+}
+
+.missionary-list {
+  list-style: none;
+}
+
+.missionary-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+}
+
+.missionary-item:last-child {
+  border-bottom: none;
+}
+
+.missionary-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #7c3aed;
+  background: #f3e8ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.missionary-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.missionary-location {
+  color: #666;
+  font-size: 12px;
+}
+
+.missionary-contact {
+  font-size: 11px;
+  color: #888;
+}
+
+/* Announcements */
+.announcements-list {
+  list-style: none;
+}
+
+.announcement-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.announcement-item:last-child {
+  border-bottom: none;
+}
+
+.announcement-title {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.announcement-desc {
+  color: #666;
+  font-size: 13px;
+  margin-top: 0.25rem;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  font-style: italic;
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+  }
+
+  .print-controls {
+    display: none !important;
+  }
+
+  .page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+
+  .page-half.left {
+    border-right: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <button class="print-btn secondary" onclick="location.reload()">Refresh</button>
+  <button class="print-btn primary" onclick="window.print()">Print Program</button>
+</div>
+
+<!-- Page 1: Cover (right) + Events/Missionaries (left) -->
+<div class="page" id="page1">
+  <div class="page-half left">
+    <h2 class="section-title">Upcoming Events</h2>
+    <ul class="events-list" id="events-list">
+      <li class="loading">Loading events...</li>
+    </ul>
+
+    <div class="missionaries-section">
+      <h2 class="section-title">Missionaries &amp; Military</h2>
+      <ul class="missionary-list" id="missionaries-list">
+        <li class="loading">Loading...</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-half right cover">
+    <img class="cover-logo" src="https://storage.googleapis.com/msgsndr/Y17ODAHcaxgHoS9kMX9v/media/680a878771b53cd35214434a.jpeg" alt="Salt Wash Ward" onerror="this.style.display='none'">
+    <h1 class="cover-title">Salt Wash Ward</h1>
+    <p class="cover-subtitle">Sacrament Meeting Program</p>
+    <p class="cover-date" id="cover-date"></p>
+    <p class="cover-welcome" id="cover-welcome">Welcome to the Salt Wash Ward.</p>
+  </div>
+</div>
+
+<!-- Page 2: Announcements (left) + Program (right) -->
+<div class="page" id="page2">
+  <div class="page-half left">
+    <h2 class="section-title">Ward Announcements</h2>
+    <ul class="announcements-list" id="announcements-list">
+      <li class="loading">Loading announcements...</li>
+    </ul>
+  </div>
+
+  <div class="page-half right program-section">
+    <h2 class="section-title">Sacrament Meeting</h2>
+    <ul class="program-list" id="program-list">
+      <li class="loading">Loading program...</li>
+    </ul>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBYkgD6v0mAFfCDEm_X1lbPR7kh3H27ukg",
+  authDomain: "salt-wash-ward-missionary.firebaseapp.com",
+  databaseURL: "https://salt-wash-ward-missionary-default-rtdb.firebaseio.com",
+  projectId: "salt-wash-ward-missionary",
+  storageBucket: "salt-wash-ward-missionary.firebasestorage.app",
+  messagingSenderId: "655176347538",
+  appId: "1:655176347538:web:fe919cb904eba9eb151b4b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Set current date
+function setDate() {
+  const today = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('cover-date').textContent = today.toLocaleDateString('en-US', options);
+}
+
+// Render program
+function renderProgram(data) {
+  const list = document.getElementById('program-list');
+  list.innerHTML = '';
+
+  let currentSection = null;
+  let isTestimonyMeeting = false;
+  let testimonyMessage = '';
+  let welcomeMessage = '';
+
+  for (const item of data) {
+    const program = item.program || '';
+    const details = item.details || '';
+
+    if (program.startsWith('#SECTION:')) {
+      const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
+      currentSection = sectionName;
+
+      if (sectionName === 'introduction') {
+        welcomeMessage = details;
+      }
+
+      if (sectionName === 'testimony') {
+        isTestimonyMeeting = true;
+        testimonyMessage = details;
+      }
+
+      // Skip banner and announcements in program
+      if (['banner', 'announcements', 'introduction'].includes(sectionName)) {
+        continue;
+      }
+
+      continue;
+    }
+
+    // Skip items in banner/announcements
+    if (['banner', 'announcements'].includes(currentSection)) {
+      continue;
+    }
+
+    // Skip empty items
+    if (!program.trim() || !details.trim()) continue;
+
+    const li = document.createElement('li');
+    li.className = 'program-item';
+
+    const label = document.createElement('span');
+    label.className = 'program-label';
+    label.textContent = program;
+
+    const value = document.createElement('span');
+    value.className = 'program-value';
+
+    const link = item.link?.trim();
+    if (link && link.startsWith('http')) {
+      const a = document.createElement('a');
+      a.href = link;
+      a.target = '_blank';
+      a.textContent = details;
+      value.appendChild(a);
+    } else {
+      value.textContent = details;
+    }
+
+    li.appendChild(label);
+    li.appendChild(value);
+    list.appendChild(li);
+  }
+
+  // Add testimony message if it's a testimony meeting
+  if (isTestimonyMeeting) {
+    const li = document.createElement('li');
+    li.className = 'program-item';
+    li.innerHTML = `<div class="testimony-message">${testimonyMessage || 'Members of the congregation are invited to bear their testimonies.'}</div>`;
+    li.style.display = 'block';
+    list.appendChild(li);
+  }
+
+  // Set welcome message
+  if (welcomeMessage) {
+    document.getElementById('cover-welcome').textContent = welcomeMessage;
+  }
+}
+
+// Render announcements
+function renderAnnouncements(data) {
+  const list = document.getElementById('announcements-list');
+  list.innerHTML = '';
+
+  let inAnnouncements = false;
+  const announcements = [];
+
+  for (const item of data) {
+    const program = item.program || '';
+
+    if (program.startsWith('#SECTION:')) {
+      const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
+      inAnnouncements = (sectionName === 'announcements');
+      continue;
+    }
+
+    if (inAnnouncements && program.trim()) {
+      announcements.push({
+        title: program,
+        description: item.details || ''
+      });
+    }
+  }
+
+  if (announcements.length === 0) {
+    list.innerHTML = '<li style="color: #888; font-style: italic;">No announcements this week.</li>';
+    return;
+  }
+
+  announcements.forEach(ann => {
+    const li = document.createElement('li');
+    li.className = 'announcement-item';
+
+    li.innerHTML = `
+      <div class="announcement-title">${ann.title}</div>
+      ${ann.description ? `<div class="announcement-desc">${ann.description}</div>` : ''}
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+// Render events
+function renderEvents(events) {
+  const list = document.getElementById('events-list');
+  list.innerHTML = '';
+
+  if (!events || events.length === 0) {
+    list.innerHTML = '<li style="color: #888; font-style: italic;">No upcoming events.</li>';
+    return;
+  }
+
+  // Filter out expired one-time events
+  const now = new Date();
+  const validEvents = events.filter(event => {
+    if (event.type === 'one-time' && event.date) {
+      const eventDate = new Date(event.date);
+      if (!isNaN(eventDate.getTime())) {
+        const endOfDay = new Date(eventDate);
+        endOfDay.setDate(endOfDay.getDate() + 1);
+        return endOfDay >= now;
+      }
+    }
+    return true;
+  });
+
+  validEvents.forEach(event => {
+    const li = document.createElement('li');
+    li.className = 'event-item';
+
+    li.innerHTML = `
+      <div class="event-date">${event.date || 'TBD'}</div>
+      <div class="event-title">${event.title || 'Event'}</div>
+      ${event.info ? `<div class="event-info">${event.info}</div>` : ''}
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+// Render missionaries
+function renderMissionaries(missionaries) {
+  const list = document.getElementById('missionaries-list');
+  list.innerHTML = '';
+
+  if (!missionaries || missionaries.length === 0) {
+    list.innerHTML = '<li style="color: #888; font-style: italic;">No missionaries or military listed.</li>';
+    return;
+  }
+
+  missionaries.forEach(person => {
+    const li = document.createElement('li');
+    li.className = 'missionary-item';
+
+    const typeLabel = person.type === 'military' ? 'Military' : 'Missionary';
+
+    li.innerHTML = `
+      <span class="missionary-type">${typeLabel}</span>
+      <div class="missionary-name">${person.name}</div>
+      ${person.location ? `<div class="missionary-location">${person.location}</div>` : ''}
+      ${person.email ? `<div class="missionary-contact">${person.email}</div>` : ''}
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+// Load all data
+async function loadData() {
+  try {
+    const [programSnap, eventsSnap, missionariesSnap] = await Promise.all([
+      get(ref(db, 'sundayProgram')),
+      get(ref(db, 'events')),
+      get(ref(db, 'missionaries'))
+    ]);
+
+    if (programSnap.exists()) {
+      const data = programSnap.val();
+      renderProgram(data);
+      renderAnnouncements(data);
+    }
+
+    if (eventsSnap.exists()) {
+      renderEvents(eventsSnap.val());
+    } else {
+      renderEvents([]);
+    }
+
+    if (missionariesSnap.exists()) {
+      renderMissionaries(missionariesSnap.val());
+    } else {
+      renderMissionaries([]);
+    }
+
+    // Apply fitty for auto-sizing text
+    if (typeof fitty !== 'undefined') {
+      fitty('.cover-title', { maxSize: 32, minSize: 20 });
+      fitty('.cover-welcome', { maxSize: 14, minSize: 10 });
+    }
+
+  } catch (error) {
+    console.error('Error loading data:', error);
+  }
+}
+
+// Initialize
+setDate();
+loadData();
+</script>
+</body>
+</html>
