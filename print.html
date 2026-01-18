@@ -158,6 +158,49 @@ body {
   list-style: none;
 }
 
+/* Section blocks for program */
+.section-block {
+  margin-bottom: 1rem;
+}
+
+.section-block .section-header {
+  font-weight: 700;
+  font-size: 14px;
+  color: #7c3aed;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #e9d5ff;
+}
+
+.program-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  font-size: 14px;
+}
+
+.row-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.row-name {
+  color: #666;
+  text-align: right;
+  max-width: 60%;
+}
+
+.row-name a {
+  color: #7c3aed;
+  text-decoration: none;
+}
+
+.empty-state {
+  color: #888;
+  font-style: italic;
+  padding: 1rem 0;
+}
+
 .program-item {
   display: flex;
   justify-content: space-between;
@@ -399,138 +442,135 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Set current date
-function setDate() {
+// Get current Sunday's date
+function getCurrentSunday() {
   const today = new Date();
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('cover-date').textContent = today.toLocaleDateString('en-US', options);
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - today.getDay());
+  return sunday.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
 }
 
-// Render program
+// Render a section block for the program
+function createSectionHTML(title, items) {
+  if (!items || items.length === 0) return '';
+
+  // Filter out items without details
+  const validItems = items.filter(item => item.details && item.details.trim());
+  if (validItems.length === 0) return '';
+
+  let html = `<div class="section-block">
+    <div class="section-header">${title}</div>`;
+
+  validItems.forEach(item => {
+    const link = item.link?.trim();
+    const detailsHtml = (link && link.startsWith('http'))
+      ? `<a href="${link}" target="_blank">${item.details || ''}</a>`
+      : (item.details || '');
+
+    html += `
+      <div class="program-row">
+        <span class="row-label">${item.label || ''}</span>
+        <span class="row-name">${detailsHtml}</span>
+      </div>`;
+  });
+
+  html += '</div>';
+  return html;
+}
+
+// Render program (new structured format)
 function renderProgram(data) {
   const list = document.getElementById('program-list');
   list.innerHTML = '';
 
-  let currentSection = null;
-  let isTestimonyMeeting = false;
-  let testimonyMessage = '';
-  let welcomeMessage = '';
+  // Set the date
+  document.getElementById('cover-date').textContent = getCurrentSunday();
 
-  for (const item of data) {
-    const program = item.program || '';
-    const details = item.details || '';
+  // Set the welcome/introduction message on front cover
+  if (data && data.introduction) {
+    document.getElementById('cover-welcome').textContent = data.introduction;
+  }
 
-    if (program.startsWith('#SECTION:')) {
-      const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
-      currentSection = sectionName;
+  if (!data || !data.sections) {
+    list.innerHTML = '<li class="empty-state">No program data available.</li>';
+    return;
+  }
 
-      if (sectionName === 'introduction') {
-        welcomeMessage = details;
-      }
+  // Build the full program
+  let programHTML = '';
 
-      if (sectionName === 'testimony') {
-        isTestimonyMeeting = true;
-        testimonyMessage = details;
-      }
+  // Opening section
+  programHTML += createSectionHTML('Opening', data.sections.opening);
 
-      // Skip banner and announcements in program
-      if (['banner', 'announcements', 'introduction'].includes(sectionName)) {
-        continue;
-      }
+  // Sacrament section
+  programHTML += createSectionHTML('Sacrament', data.sections.sacrament);
 
-      continue;
-    }
-
-    // Skip items in banner/announcements
-    if (['banner', 'announcements'].includes(currentSection)) {
-      continue;
-    }
-
-    // Skip empty items
-    if (!program.trim() || !details.trim()) continue;
-
-    const li = document.createElement('li');
-    li.className = 'program-item';
-
-    const label = document.createElement('span');
-    label.className = 'program-label';
-    label.textContent = program;
-
-    const value = document.createElement('span');
-    value.className = 'program-value';
-
-    const link = item.link?.trim();
-    if (link && link.startsWith('http')) {
-      const a = document.createElement('a');
-      a.href = link;
-      a.target = '_blank';
-      a.textContent = details;
-      value.appendChild(a);
+  // If testimony meeting, add special message instead of speakers
+  if (data.isTestimonyMeeting) {
+    if (data.testimonyMessage) {
+      programHTML += `<div class="testimony-message">${data.testimonyMessage}</div>`;
     } else {
-      value.textContent = details;
+      programHTML += `<div class="testimony-message">Members of the congregation are invited to bear their testimonies.</div>`;
     }
-
-    li.appendChild(label);
-    li.appendChild(value);
-    list.appendChild(li);
+  } else {
+    // Speakers/Program section
+    programHTML += createSectionHTML('Program', data.sections.speakers);
   }
 
-  // Add testimony message if it's a testimony meeting
-  if (isTestimonyMeeting) {
-    const li = document.createElement('li');
-    li.className = 'program-item';
-    li.innerHTML = `<div class="testimony-message">${testimonyMessage || 'Members of the congregation are invited to bear their testimonies.'}</div>`;
-    li.style.display = 'block';
-    list.appendChild(li);
-  }
+  // Closing section
+  programHTML += createSectionHTML('Closing', data.sections.closing);
 
-  // Set welcome message
-  if (welcomeMessage) {
-    document.getElementById('cover-welcome').textContent = welcomeMessage;
-  }
+  list.innerHTML = programHTML || '<li class="empty-state">No program data available.</li>';
+
+  // Apply fitty for auto-text-sizing
+  setTimeout(() => {
+    if (typeof fitty !== 'undefined') {
+      fitty('.row-name', {
+        minSize: 12,
+        maxSize: 16,
+        multiLine: false
+      });
+    }
+  }, 100);
 }
 
-// Render announcements
+// Render announcements (new structured format)
 function renderAnnouncements(data) {
   const list = document.getElementById('announcements-list');
   list.innerHTML = '';
 
-  let inAnnouncements = false;
-  const announcements = [];
-
-  for (const item of data) {
-    const program = item.program || '';
-
-    if (program.startsWith('#SECTION:')) {
-      const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
-      inAnnouncements = (sectionName === 'announcements');
-      continue;
-    }
-
-    if (inAnnouncements && program.trim()) {
-      announcements.push({
-        title: program,
-        description: item.details || ''
-      });
-    }
-  }
-
-  if (announcements.length === 0) {
+  if (!data || !data.sections || !data.sections.announcements) {
     list.innerHTML = '<li style="color: #888; font-style: italic;">No announcements this week.</li>';
     return;
   }
 
-  announcements.forEach(ann => {
-    const li = document.createElement('li');
-    li.className = 'announcement-item';
+  const announcements = data.sections.announcements;
 
-    li.innerHTML = `
-      <div class="announcement-title">${ann.title}</div>
-      ${ann.description ? `<div class="announcement-desc">${ann.description}</div>` : ''}
-    `;
+  // Filter out empty announcements
+  const validAnnouncements = announcements.filter(a =>
+    (a.label && a.label.trim()) || (a.details && a.details.trim())
+  );
 
-    list.appendChild(li);
+  if (validAnnouncements.length === 0) {
+    list.innerHTML = '<li style="color: #888; font-style: italic;">No announcements this week.</li>';
+    return;
+  }
+
+  let html = '';
+  validAnnouncements.forEach(item => {
+    html += `
+      <div class="announcement-item">
+        <div class="announcement-title">${item.label || 'Announcement'}</div>
+        <div class="announcement-desc">${item.details || ''}</div>
+      </div>`;
   });
+
+  list.innerHTML = html;
 }
 
 // Render events

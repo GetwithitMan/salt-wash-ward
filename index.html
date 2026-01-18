@@ -1943,13 +1943,77 @@ async function loadProgram() {
       const snapshot = await get(ref(db, 'sundayProgram'));
       if (snapshot.exists()) {
         const data = snapshot.val();
-        // Convert Firebase format to rows format
-        rows = data.map(item => [
-          item.program || '',
-          item.details || '',
-          item.link || '',
-          item.accent || ''
-        ]);
+
+        // Check if it's the new structured format
+        if (data && data.sections) {
+          // Convert new structured format to rows format for renderProgram
+          rows = [];
+
+          // Add banner section
+          rows.push(['#SECTION: Banner', 'Announcements', '', '']);
+          if (data.sections.banner) {
+            data.sections.banner.forEach(item => {
+              rows.push([item.label || '', item.details || '', item.link || '', '']);
+            });
+          }
+
+          // Add introduction
+          rows.push(['#SECTION: Introduction', data.introduction || '', '', '']);
+
+          // Add opening section
+          rows.push(['#SECTION: Opening', '', '', '']);
+          if (data.sections.opening) {
+            data.sections.opening.forEach(item => {
+              rows.push([item.label || '', item.details || '', item.link || '', '']);
+            });
+          }
+
+          // Add sacrament section
+          rows.push(['#SECTION: Sacrament', '', '', '']);
+          if (data.sections.sacrament) {
+            data.sections.sacrament.forEach(item => {
+              rows.push([item.label || '', item.details || '', item.link || '', '']);
+            });
+          }
+
+          // Add testimony or speakers section
+          if (data.isTestimonyMeeting) {
+            rows.push(['#SECTION: Testimony', data.testimonyMessage || '', '', '']);
+          } else {
+            rows.push(['#SECTION: Speakers', '', '', '']);
+            if (data.sections.speakers) {
+              data.sections.speakers.forEach(item => {
+                rows.push([item.label || '', item.details || '', item.link || '', '']);
+              });
+            }
+          }
+
+          // Add closing section
+          rows.push(['#SECTION: Closing', '', '', '']);
+          if (data.sections.closing) {
+            data.sections.closing.forEach(item => {
+              rows.push([item.label || '', item.details || '', item.link || '', '']);
+            });
+          }
+
+          // Add announcements section
+          rows.push(['#SECTION: Announcements', '', '', '']);
+          if (data.sections.announcements) {
+            data.sections.announcements.forEach(item => {
+              rows.push([item.label || '', item.details || '', item.link || '', '']);
+            });
+          }
+        } else if (Array.isArray(data)) {
+          // Old flat array format
+          rows = data.map(item => [
+            item.program || '',
+            item.details || '',
+            item.link || '',
+            item.accent || ''
+          ]);
+        } else {
+          throw new Error('Unknown data format');
+        }
       } else {
         throw new Error('No program data in Firebase');
       }

@@ -2407,45 +2407,80 @@ function getDefaultProgram() {
 function renderProgram(data) {
   // Clear all sections
   Object.values(sections).forEach(container => {
-    container.innerHTML = '';
+    if (container) container.innerHTML = '';
   });
 
-  let currentSection = null;
   const introMessage = document.getElementById('intro-message');
-  let hasTestimonySection = false;
 
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
-    const program = item.program || '';
-
-    if (program.startsWith('#SECTION:')) {
-      const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
-      currentSection = sectionName;
-
-      // Handle introduction section specially
-      if (sectionName === 'introduction' && introMessage) {
-        introMessage.value = item.details || '';
-      }
-
-      // Handle testimony section
-      if (sectionName === 'testimony') {
-        hasTestimonySection = true;
-        if (testimonyMessage) {
-          testimonyMessage.value = item.details || '';
-        }
-      }
-      continue;
+  // Handle new structured format (matching Aspen Ward)
+  if (data && data.sections) {
+    // Set introduction message
+    if (introMessage && data.introduction) {
+      introMessage.value = data.introduction;
     }
 
-    // Add items to their respective sections
-    if (currentSection && sections[currentSection]) {
-      const itemElement = createProgramItemHTML(item, currentSection);
-      sections[currentSection].appendChild(itemElement);
+    // Set testimony mode and message
+    if (data.isTestimonyMeeting !== undefined) {
+      setTestimonyMode(data.isTestimonyMeeting);
     }
+    if (testimonyMessage && data.testimonyMessage) {
+      testimonyMessage.value = data.testimonyMessage;
+    }
+
+    // Render each section
+    const sectionNames = ['banner', 'opening', 'sacrament', 'speakers', 'closing', 'announcements'];
+    sectionNames.forEach(sectionName => {
+      const sectionData = data.sections[sectionName];
+      if (sectionData && Array.isArray(sectionData) && sections[sectionName]) {
+        sectionData.forEach(item => {
+          // Convert from new format (label/details) to old format (program/details) for createProgramItemHTML
+          const convertedItem = {
+            program: item.label || '',
+            details: item.details || '',
+            link: item.link || ''
+          };
+          const itemElement = createProgramItemHTML(convertedItem, sectionName);
+          sections[sectionName].appendChild(itemElement);
+        });
+      }
+    });
+    return;
   }
 
-  // Set testimony mode based on data
-  setTestimonyMode(hasTestimonySection);
+  // Fallback: Handle old flat array format for backwards compatibility
+  if (Array.isArray(data)) {
+    let currentSection = null;
+    let hasTestimonySection = false;
+
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      const program = item.program || '';
+
+      if (program.startsWith('#SECTION:')) {
+        const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
+        currentSection = sectionName;
+
+        if (sectionName === 'introduction' && introMessage) {
+          introMessage.value = item.details || '';
+        }
+
+        if (sectionName === 'testimony') {
+          hasTestimonySection = true;
+          if (testimonyMessage) {
+            testimonyMessage.value = item.details || '';
+          }
+        }
+        continue;
+      }
+
+      if (currentSection && sections[currentSection]) {
+        const itemElement = createProgramItemHTML(item, currentSection);
+        sections[currentSection].appendChild(itemElement);
+      }
+    }
+
+    setTestimonyMode(hasTestimonySection);
+  }
 }
 
 // === Save Program to Firebase ===
@@ -2535,75 +2570,35 @@ function collectEventsData() {
 }
 
 function collectProgramData() {
-  const data = [];
   const introMessage = document.getElementById('intro-message');
 
-  // Banner section
-  data.push({ program: '#SECTION: Banner', details: 'Announcements', link: '' });
-  sections.banner.querySelectorAll('.program-item').forEach(item => {
-    data.push({
-      program: item.querySelector('.item-program')?.value || '',
-      details: item.querySelector('.item-details')?.value || '',
-      link: item.querySelector('.item-link')?.value || ''
-    });
-  });
-
-  // Introduction section
-  data.push({ program: '#SECTION: Introduction', details: introMessage?.value || '', link: '' });
-
-  // Opening section
-  data.push({ program: '#SECTION: Opening', details: '', link: '' });
-  sections.opening.querySelectorAll('.program-item').forEach(item => {
-    data.push({
-      program: item.querySelector('.item-program')?.value || '',
-      details: item.querySelector('.item-details')?.value || '',
-      link: item.querySelector('.item-link')?.value || ''
-    });
-  });
-
-  // Sacrament section
-  data.push({ program: '#SECTION: Sacrament', details: '', link: '' });
-  sections.sacrament.querySelectorAll('.program-item').forEach(item => {
-    data.push({
-      program: item.querySelector('.item-program')?.value || '',
-      details: item.querySelector('.item-details')?.value || '',
-      link: item.querySelector('.item-link')?.value || ''
-    });
-  });
-
-  // Testimony or Speakers section (depending on toggle)
-  if (isTestimonyMeeting) {
-    data.push({ program: '#SECTION: Testimony', details: testimonyMessage?.value || '', link: '' });
-  } else {
-    data.push({ program: '#SECTION: Speakers', details: '', link: '' });
-    sections.speakers.querySelectorAll('.program-item').forEach(item => {
-      data.push({
-        program: item.querySelector('.item-program')?.value || '',
+  // Helper to collect items from a section
+  function collectSectionItems(sectionElement) {
+    const items = [];
+    sectionElement.querySelectorAll('.program-item').forEach(item => {
+      items.push({
+        label: item.querySelector('.item-program')?.value || '',
         details: item.querySelector('.item-details')?.value || '',
         link: item.querySelector('.item-link')?.value || ''
       });
     });
+    return items;
   }
 
-  // Closing section
-  data.push({ program: '#SECTION: Closing', details: '', link: '' });
-  sections.closing.querySelectorAll('.program-item').forEach(item => {
-    data.push({
-      program: item.querySelector('.item-program')?.value || '',
-      details: item.querySelector('.item-details')?.value || '',
-      link: item.querySelector('.item-link')?.value || ''
-    });
-  });
-
-  // Announcements section
-  data.push({ program: '#SECTION: Announcements', details: '', link: '' });
-  sections.announcements.querySelectorAll('.program-item').forEach(item => {
-    data.push({
-      program: item.querySelector('.item-program')?.value || '',
-      details: item.querySelector('.item-details')?.value || '',
-      link: item.querySelector('.item-link')?.value || ''
-    });
-  });
+  // Build structured data object (matching Aspen Ward format)
+  const data = {
+    introduction: introMessage?.value || '',
+    isTestimonyMeeting: isTestimonyMeeting,
+    testimonyMessage: testimonyMessage?.value || '',
+    sections: {
+      banner: collectSectionItems(sections.banner),
+      opening: collectSectionItems(sections.opening),
+      sacrament: collectSectionItems(sections.sacrament),
+      speakers: collectSectionItems(sections.speakers),
+      closing: collectSectionItems(sections.closing),
+      announcements: collectSectionItems(sections.announcements)
+    }
+  };
 
   return data;
 }
