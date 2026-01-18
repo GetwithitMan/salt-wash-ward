@@ -114,7 +114,7 @@ body {
 
 .events-header {
   font-family: "Playfair Display", serif;
-  font-size: 16pt;
+  font-size: 18pt;
   font-weight: 700;
   text-align: center;
   color: #2c5530;
@@ -142,14 +142,14 @@ body {
 }
 
 .event-title {
-  font-size: 12pt;
+  font-size: 14pt;
   font-weight: 600;
   color: #222;
   margin: 2px 0;
 }
 
 .event-info {
-  font-size: 10pt;
+  font-size: 12pt;
   color: #555;
   line-height: 1.4;
 }
@@ -181,20 +181,20 @@ body {
 
 .cover-title {
   font-family: "Playfair Display", serif;
-  font-size: 28pt;
+  font-size: 32pt;
   font-weight: 600;
   margin: 0 0 0.1in 0;
   color: #1a1a1a;
 }
 
 .cover-subtitle {
-  font-size: 12pt;
+  font-size: 14pt;
   color: #555;
   margin: 0 0 0.15in 0;
 }
 
 .cover-date {
-  font-size: 12pt;
+  font-size: 14pt;
   color: #2c5530;
   font-weight: 500;
 }
@@ -224,7 +224,7 @@ body {
 
 .announcements-header {
   font-family: "Playfair Display", serif;
-  font-size: 16pt;
+  font-size: 18pt;
   font-weight: 600;
   text-align: center;
   color: #2c5530;
@@ -244,14 +244,14 @@ body {
 }
 
 .announcement-title {
-  font-size: 12pt;
+  font-size: 14pt;
   font-weight: 600;
   color: #222;
   margin-bottom: 2px;
 }
 
 .announcement-description {
-  font-size: 10pt;
+  font-size: 12pt;
   color: #555;
   line-height: 1.4;
 }
@@ -263,7 +263,7 @@ body {
 
 .program-header {
   font-family: "Playfair Display", serif;
-  font-size: 18pt;
+  font-size: 20pt;
   font-weight: 600;
   text-align: center;
   color: #2c5530;
@@ -279,7 +279,7 @@ body {
 
 .section-header {
   font-family: "Playfair Display", serif;
-  font-size: 13pt;
+  font-size: 15pt;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -299,7 +299,7 @@ body {
 }
 
 .row-label {
-  font-size: 13pt;
+  font-size: 14pt;
   color: #333;
   flex-shrink: 0;
   margin-right: 8px;
@@ -307,7 +307,7 @@ body {
 }
 
 .row-name {
-  font-size: 13pt;
+  font-size: 14pt;
   color: #111;
   text-align: right;
   white-space: nowrap;
@@ -627,8 +627,8 @@ async function loadProgram() {
     // Apply fitty for auto-text-sizing
     setTimeout(() => {
       fitty('.row-name', {
-        minSize: 10,
-        maxSize: 13,
+        minSize: 11,
+        maxSize: 14,
         multiLine: false
       });
     }, 100);
