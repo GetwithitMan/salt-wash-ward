@@ -438,6 +438,17 @@ function getCurrentSunday() {
   });
 }
 
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Render a section block for the program
 function createSectionHTML(title, items) {
   if (!items || items.length === 0) return '';
@@ -452,8 +463,8 @@ function createSectionHTML(title, items) {
   validItems.forEach(item => {
     html += `
       <div class="program-row">
-        <span class="row-label">${item.label || ''}</span>
-        <span class="row-name">${item.details || ''}</span>
+        <span class="row-label">${escapeHtml(item.label)}</span>
+        <span class="row-name">${escapeHtml(item.details)}</span>
       </div>`;
   });
 
@@ -461,18 +472,75 @@ function createSectionHTML(title, items) {
   return html;
 }
 
+// Helper to convert old array format to new structure
+function convertOldFormat(arrayData) {
+  const sections = {
+    opening: [],
+    sacrament: [],
+    speakers: [],
+    closing: [],
+    announcements: []
+  };
+  
+  let currentSection = 'opening';
+  let introduction = '';
+  let isTestimonyMeeting = false;
+  let testimonyMessage = '';
+
+  arrayData.forEach(item => {
+    const program = item.program || '';
+    const details = item.details || '';
+
+    if (program.startsWith('#SECTION:')) {
+      const sectionName = program.replace('#SECTION:', '').trim().toLowerCase();
+      
+      if (sectionName === 'introduction') {
+        introduction = details;
+        currentSection = null;
+      } else if (sectionName === 'testimony') {
+        isTestimonyMeeting = true;
+        testimonyMessage = details;
+        currentSection = null;
+      } else if (sectionName === 'banner') {
+        currentSection = null;
+      } else if (sections[sectionName]) {
+        currentSection = sectionName;
+      } else {
+        currentSection = 'speakers';
+      }
+    } else if (currentSection && sections[currentSection]) {
+      sections[currentSection].push({
+        label: program,
+        details: details
+      });
+    }
+  });
+
+  return {
+    introduction,
+    isTestimonyMeeting,
+    testimonyMessage,
+    sections
+  };
+}
+
 // Load and render the program
 async function loadProgram() {
   try {
     const snapshot = await get(ref(db, 'sundayProgram'));
-    const data = snapshot.val();
+    let data = snapshot.val();
+
+    // Handle old array format
+    if (Array.isArray(data)) {
+      data = convertOldFormat(data);
+    }
 
     // Set the date
     document.getElementById('program-date').textContent = getCurrentSunday();
 
     // Set the welcome/introduction message on front cover
     if (data && data.introduction) {
-      document.getElementById('cover-welcome').textContent = data.introduction;
+      document.getElementById('cover-welcome').textContent = data.introduction || 'Welcome to the Salt Wash Ward.';
     }
 
     if (!data || !data.sections) {
@@ -493,7 +561,7 @@ async function loadProgram() {
     // If testimony meeting, add special message instead of speakers
     if (data.isTestimonyMeeting) {
       if (data.testimonyMessage) {
-        programHTML += `<div class="testimony-message">${data.testimonyMessage}</div>`;
+        programHTML += `<div class="testimony-message">${escapeHtml(data.testimonyMessage)}</div>`;
       }
     } else {
       // Speakers/Program section
@@ -552,8 +620,8 @@ function loadAnnouncements(announcements) {
   validAnnouncements.forEach(item => {
     html += `
       <div class="announcement-item">
-        <div class="announcement-title">${item.label || 'Announcement'}</div>
-        <div class="announcement-description">${item.details || ''}</div>
+        <div class="announcement-title">${escapeHtml(item.label || 'Announcement')}</div>
+        <div class="announcement-description">${escapeHtml(item.details)}</div>
       </div>`;
   });
 
@@ -588,9 +656,9 @@ async function loadEvents() {
     validEvents.forEach(event => {
       html += `
         <div class="event-item">
-          <div class="event-date">${event.date || 'Date TBD'}</div>
-          <div class="event-title">${event.title || 'Ward Event'}</div>
-          <div class="event-info">${event.info || ''}</div>
+          <div class="event-date">${escapeHtml(event.date || 'Date TBD')}</div>
+          <div class="event-title">${escapeHtml(event.title || 'Ward Event')}</div>
+          <div class="event-info">${escapeHtml(event.info)}</div>
         </div>`;
     });
 
@@ -630,12 +698,12 @@ async function loadMissionaries() {
       const typeLabel = person.type === 'military' ? 'Military' : 'Missionary';
       html += `
         <div class="missionary-item">
-          <div class="missionary-type">${typeLabel}</div>
-          <div class="missionary-name">${person.name || ''}</div>
-          ${person.location ? `<div class="missionary-location">${person.location}</div>` : ''}
+          <div class="missionary-type">${escapeHtml(typeLabel)}</div>
+          <div class="missionary-name">${escapeHtml(person.name)}</div>
+          ${person.location ? `<div class="missionary-location">${escapeHtml(person.location)}</div>` : ''}
           <div class="missionary-contact">
-            ${person.email ? `<div>Email: <a href="mailto:${person.email}">${person.email}</a></div>` : ''}
-            ${person.address ? `<div>${person.address.replace(/\n/g, ', ')}</div>` : ''}
+            ${person.email ? `<div>Email: <a href="mailto:${escapeHtml(person.email)}">${escapeHtml(person.email)}</a></div>` : ''}
+            ${person.address ? `<div>${escapeHtml(person.address).replace(/\n/g, ', ')}</div>` : ''}
           </div>
         </div>`;
     });
