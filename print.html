@@ -110,6 +110,21 @@ body {
 /* Events section on back cover */
 .events-page {
   padding: 0.5in;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Events container gets 2/3 of the space */
+.events-container {
+  flex: 2;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.events-content {
+  flex: 1;
+  overflow: hidden;
 }
 
 .events-header {
@@ -127,6 +142,8 @@ body {
   margin-bottom: 0.18in;
   padding-bottom: 0.12in;
   border-bottom: 1px solid #eee;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 .event-item:last-child {
@@ -263,6 +280,11 @@ body {
   line-height: 1.4;
 }
 
+#announcements-list {
+  flex: 1;
+  overflow: hidden;
+}
+
 /* Program section (full right side) */
 .program-page {
   padding: 0.4in 0.5in;
@@ -354,10 +376,20 @@ body {
 }
 
 /* === MISSIONARIES & MILITARY SECTION === */
+/* Missionaries section gets 1/3 of the space */
 .missionaries-section {
-  margin-top: 0.3in;
+  flex: 1;
+  overflow: hidden;
+  margin-top: 0;
   padding-top: 0.2in;
   border-top: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+.missionaries-content {
+  flex: 1;
+  overflow: hidden;
 }
 
 .missionaries-header {
@@ -407,6 +439,7 @@ body {
   color: #666;
   margin-top: 2px;
   line-height: 1.3;
+  overflow-wrap: break-word;
 }
 
 .missionary-contact a {
@@ -424,14 +457,23 @@ body {
 
 <!-- Page 1 -->
 <div class="sheet" id="page1">
-  <div class="half-page left-side events-page">
-    <div class="events-header">Upcoming Events</div>
-    <div id="events-loading" class="loading">Loading events...</div>
-    <div id="events-list"></div>
+  <!-- Events (when folded, this is the back) -->
+  <div class="half-page left-side events-page" id="events-section">
+    <!-- Events container: 2/3 of the page -->
+    <div class="events-container">
+      <div class="events-header">Upcoming Events</div>
+      <div class="events-content" id="events-content">
+        <div class="loading" id="events-loading">Loading events...</div>
+        <div id="events-list"></div>
+      </div>
+    </div>
 
-    <div id="missionaries-section" class="missionaries-section">
+    <!-- Missionaries & Military Section: 1/3 of the page -->
+    <div id="missionaries-section" class="missionaries-section" style="display: none;">
       <div class="missionaries-header">Missionaries &amp; Military</div>
-      <div id="missionaries-list"></div>
+      <div class="missionaries-content" id="missionaries-content">
+        <div id="missionaries-list"></div>
+      </div>
     </div>
   </div>
 
@@ -611,12 +653,19 @@ async function loadProgram() {
     // Sacrament section
     programHTML += createSectionHTML('Sacrament', data.sections.sacrament);
 
-    // If testimony meeting, add special message instead of speakers
+    // If testimony meeting, add special header and message instead of speakers
     if (data.isTestimonyMeeting) {
-      if (data.testimonyMessage) {
-        programHTML += `<div class="testimony-message">${data.testimonyMessage}</div>`;
-      }
+      // Update main header title
+      const progHeader = document.querySelector('.program-header');
+      if (progHeader) progHeader.textContent = "Fast & Testimony Meeting";
+
+      programHTML += `<div class="section-block">
+        <div class="section-header">Testimonies</div>
+        <div class="testimony-message">${data.testimonyMessage || 'Members of the congregation are invited to share their testimonies.'}</div>
+      </div>`;
     } else {
+      const progHeader = document.querySelector('.program-header');
+      if (progHeader) progHeader.textContent = "Sacrament Meeting";
       // Speakers/Program section
       programHTML += createSectionHTML('Program', data.sections.speakers);
     }
@@ -705,6 +754,14 @@ async function loadEvents() {
       return;
     }
 
+    // Conditional columns: 1 column for < 5 events, 2 columns for 5+
+    if (validEvents.length >= 5) {
+      container.style.columnCount = '2';
+      container.style.columnGap = '0.25in';
+    } else {
+      container.style.columnCount = '1';
+    }
+
     let html = '';
     validEvents.forEach(event => {
       html += `
@@ -731,15 +788,27 @@ async function loadMissionaries() {
 
   try {
     const snapshot = await get(ref(db, 'missionaries'));
-    const data = snapshot.val();
+    let data = snapshot.val();
 
-    if (!data || !Array.isArray(data) || data.length === 0) {
+    console.log('Missionaries data from Firebase:', data);
+
+    if (!data) {
+      section.style.display = 'none';
+      return;
+    }
+
+    // Handle both array and object formats from Firebase
+    if (!Array.isArray(data)) {
+      data = Object.values(data);
+    }
+
+    if (data.length === 0) {
       section.style.display = 'none';
       return;
     }
 
     // Filter out empty entries
-    const validMissionaries = data.filter(m => m.name && m.name.trim());
+    const validMissionaries = data.filter(m => m && m.name && m.name.trim());
 
     if (validMissionaries.length === 0) {
       section.style.display = 'none';
@@ -762,11 +831,118 @@ async function loadMissionaries() {
     });
 
     container.innerHTML = html;
-    section.style.display = 'block';
+    section.style.display = 'flex';  // IMPORTANT: use 'flex' not 'block'
 
   } catch (error) {
     console.error('Failed to load missionaries:', error);
     section.style.display = 'none';
+  }
+}
+
+// Auto-scale events text to fit container
+function fitEventsToContainer() {
+  const container = document.getElementById('events-content');
+  const eventsList = document.getElementById('events-list');
+
+  if (!container || !eventsList || !eventsList.children.length) return;
+
+  let baseFontSize = 14;
+  const minFontSize = 9;
+
+  while (eventsList.scrollHeight > container.clientHeight && baseFontSize > minFontSize) {
+    baseFontSize -= 0.5;
+
+    const eventItems = eventsList.querySelectorAll('.event-item');
+    eventItems.forEach(item => {
+      const date = item.querySelector('.event-date');
+      const title = item.querySelector('.event-title');
+      const info = item.querySelector('.event-info');
+
+      if (date) date.style.fontSize = (baseFontSize - 3) + 'pt';
+      if (title) title.style.fontSize = baseFontSize + 'pt';
+      if (info) info.style.fontSize = (baseFontSize - 2) + 'pt';
+
+      item.style.marginBottom = Math.max(0.08, 0.18 - (14 - baseFontSize) * 0.02) + 'in';
+      item.style.paddingBottom = Math.max(0.06, 0.12 - (14 - baseFontSize) * 0.01) + 'in';
+    });
+  }
+}
+
+// Auto-scale missionaries/military text to fit container
+function fitMissionariesToContainer() {
+  const container = document.getElementById('missionaries-content');
+  const missionariesList = document.getElementById('missionaries-list');
+  const section = document.getElementById('missionaries-section');
+  const header = section ? section.querySelector('.missionaries-header') : null;
+
+  if (!container || !missionariesList || !missionariesList.children.length) return;
+
+  let baseFontSize = 13;
+  const minFontSize = 6;
+
+  const isOverflowing = () => missionariesList.scrollHeight > container.clientHeight;
+
+  if (isOverflowing()) {
+    if (section) section.style.paddingTop = '0.05in';
+    if (header) {
+      header.style.fontSize = '12pt';
+      header.style.marginBottom = '0.05in';
+      header.style.paddingBottom = '2px';
+    }
+  }
+
+  while (isOverflowing() && baseFontSize > minFontSize) {
+    baseFontSize -= 0.5;
+
+    const missionaryItems = missionariesList.querySelectorAll('.missionary-item');
+    missionaryItems.forEach(item => {
+      const type = item.querySelector('.missionary-type');
+      const name = item.querySelector('.missionary-name');
+      const location = item.querySelector('.missionary-location');
+      const contact = item.querySelector('.missionary-contact');
+
+      if (type) type.style.fontSize = Math.max(5, baseFontSize - 4) + 'pt';
+      if (name) name.style.fontSize = baseFontSize + 'pt';
+      if (location) location.style.fontSize = Math.max(6, baseFontSize - 2) + 'pt';
+      if (contact) {
+        contact.style.fontSize = Math.max(6, baseFontSize - 3) + 'pt';
+        contact.style.lineHeight = Math.max(1.0, 1.2 - (13 - baseFontSize) * 0.05);
+      }
+
+      item.style.marginBottom = Math.max(0.01, 0.10 - (13 - baseFontSize) * 0.03) + 'in';
+      item.style.paddingBottom = Math.max(0.01, 0.06 - (13 - baseFontSize) * 0.02) + 'in';
+    });
+
+    if (baseFontSize < 10 && header) {
+      header.style.fontSize = '11pt';
+      header.style.marginBottom = '0.02in';
+    }
+  }
+}
+
+// Auto-scale announcements text to fit container
+function fitAnnouncementsToContainer() {
+  const container = document.getElementById('announcements-list');
+
+  if (!container || !container.children.length) return;
+
+  let baseFontSize = 14;
+  const minFontSize = 9;
+
+  while (container.scrollHeight > container.clientHeight && baseFontSize > minFontSize) {
+    baseFontSize -= 0.5;
+
+    const items = container.querySelectorAll('.announcement-item');
+    items.forEach(item => {
+      const title = item.querySelector('.announcement-title');
+      const description = item.querySelector('.announcement-description');
+
+      if (title) title.style.fontSize = baseFontSize + 'pt';
+      if (description) description.style.fontSize = (baseFontSize - 2) + 'pt';
+
+      item.style.marginBottom = Math.max(0.08, 0.18 - (14 - baseFontSize) * 0.02) + 'in';
+      item.style.paddingBottom = Math.max(0.06, 0.12 - (14 - baseFontSize) * 0.01) + 'in';
+    });
   }
 }
 
@@ -777,6 +953,13 @@ async function init() {
     loadEvents(),
     loadMissionaries()
   ]);
+
+  // After all content loads, fit content to containers
+  setTimeout(() => {
+    fitEventsToContainer();
+    fitMissionariesToContainer();
+    fitAnnouncementsToContainer();
+  }, 500);
 }
 
 document.addEventListener('DOMContentLoaded', init);
