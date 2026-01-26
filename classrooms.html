@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Salt Wash Ward – Classroom Finder</title>
+<meta name="description" content="Find your classroom location at Salt Wash Ward.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%237c3aed' rx='20' width='100' height='100'/><text x='50' y='68' font-size='48' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>SW</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light dark;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  --bg: #f9f5ef;
+  --bg-alt: #f2e9dd;
+  --surface: #ffffff;
+  --surface-muted: #fff8f0;
+  --surface-soft: rgba(255, 255, 255, 0.82);
+  --stroke: rgba(61, 41, 21, 0.12);
+  --stroke-strong: rgba(61, 41, 21, 0.18);
+  --ink: #2f1c11;
+  --ink-soft: rgba(47, 28, 17, 0.78);
+  --ink-muted: rgba(47, 28, 17, 0.56);
+  --accent: #7c3aed;
+  --accent-strong: #5b21b6;
+  --accent-soft: rgba(124, 58, 237, 0.18);
+  --accent-contrast: #ffffff;
+  --warning: #d97706;
+  --shadow-lg: 0 28px 60px rgba(64, 41, 102, 0.14);
+  --shadow-md: 0 18px 44px rgba(64, 41, 102, 0.12);
+  --shadow-sm: 0 10px 28px rgba(64, 41, 102, 0.08);
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --transition: 180ms ease;
+  --content-width: min(800px, 92vw);
+}
+
+[data-theme="dark"] {
+  --bg: #1b1624;
+  --bg-alt: #251d32;
+  --surface: rgba(31, 26, 37, 0.92);
+  --surface-muted: rgba(44, 34, 58, 0.82);
+  --surface-soft: rgba(31, 26, 37, 0.86);
+  --stroke: rgba(233, 224, 255, 0.12);
+  --stroke-strong: rgba(233, 224, 255, 0.18);
+  --ink: #f5f3ff;
+  --ink-soft: rgba(245, 243, 255, 0.82);
+  --ink-muted: rgba(245, 243, 255, 0.6);
+  --accent: #b8a4ff;
+  --accent-strong: #9f87ff;
+  --accent-soft: rgba(184, 164, 255, 0.22);
+  --accent-contrast: #160f24;
+  --shadow-lg: 0 32px 70px rgba(10, 6, 18, 0.6);
+  --shadow-md: 0 22px 50px rgba(10, 6, 18, 0.48);
+  --shadow-sm: 0 14px 32px rgba(10, 6, 18, 0.38);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, var(--bg-alt), transparent 55%),
+    linear-gradient(180deg, var(--bg) 0%, var(--surface) 60%, var(--bg-alt) 100%);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(124, 58, 237, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.35;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+/* Layout */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--surface-soft) 88%, transparent);
+  border-bottom: 1px solid var(--stroke);
+}
+
+.header-shell {
+  width: var(--content-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.75rem 0;
+  min-height: 64px;
+}
+
+/* Brand */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem 0.55rem 0.55rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--stroke);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.brand:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: inherit;
+}
+
+.brand-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+  display: grid;
+  place-items: center;
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.brand-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+}
+
+.brand-subtitle {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent-contrast) 0%, var(--accent-contrast) 34%, transparent 60%),
+    linear-gradient(140deg, var(--accent), var(--accent-strong));
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.16);
+}
+
+[data-theme="dark"] .theme-icon {
+  background: radial-gradient(circle at 70% 30%, rgba(22, 14, 33, 0.35) 0%, rgba(22, 14, 33, 0.35) 34%, transparent 58%),
+    linear-gradient(140deg, var(--accent), var(--accent-strong));
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  padding: 2rem 0;
+}
+
+.container {
+  width: var(--content-width);
+  margin: 0 auto;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  margin: 0 0 0.5rem;
+}
+
+.page-subtitle {
+  color: var(--ink-muted);
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--stroke-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.tab-btn.active {
+  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+  border-color: transparent;
+}
+
+/* Room Buttons */
+.room-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.room-btn {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--stroke-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  min-width: 140px;
+}
+
+.room-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.room-btn.selected {
+  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+  border-color: transparent;
+}
+
+.room-btn-label {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.room-btn-room {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.8;
+  margin-top: 0.15rem;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--ink-muted);
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* Floorplan */
+.floorplan-card {
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.floorplan-header {
+  padding: 1rem 1.25rem;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--stroke);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.floorplan-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.floorplan-hint {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.floorplan-wrapper {
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.floorplan-inner {
+  position: relative;
+  width: 800px;
+  margin: 0 auto;
+}
+
+.floorplan-inner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Room Overlays */
+.room-overlay {
+  position: absolute;
+  border: 3px solid transparent;
+  pointer-events: none;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.room-overlay.highlight {
+  animation: pulse-room 1.2s ease-in-out infinite alternate;
+  pointer-events: auto;
+}
+
+@keyframes pulse-room {
+  from {
+    background-color: rgba(220, 38, 38, 0.5);
+    border-color: #ffffff;
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+  }
+  to {
+    background-color: rgba(251, 191, 36, 0.5);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+  }
+}
+
+.room-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(31, 41, 55, 0.85);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+  white-space: pre-line;
+}
+
+/* No Floorplan Message */
+.no-floorplan {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+.no-floorplan-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* Mobile: horizontal scroll */
+@media (max-width: 840px) {
+  .floorplan-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .floorplan-inner {
+    width: 800px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --content-width: 95vw;
+  }
+
+  .room-btn {
+    min-width: 120px;
+    padding: 0.6rem 1rem;
+  }
+
+  .room-btn-label {
+    font-size: 0.88rem;
+  }
+
+  .header-shell {
+    padding: 0.5rem 0;
+  }
+
+  .brand {
+    padding: 0.4rem 0.6rem 0.4rem 0.4rem;
+    gap: 0.5rem;
+  }
+
+  .brand-icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.9rem;
+  }
+
+  .brand-title {
+    font-size: 1rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.72rem;
+  }
+
+  .floorplan-hint {
+    display: none;
+  }
+}
+
+/* Footer */
+.site-footer {
+  margin-top: auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent-strong);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+<header class="site-header">
+  <div class="header-shell">
+    <a class="brand" href="/">
+      <span class="brand-icon" aria-hidden="true">SW</span>
+      <span class="brand-copy">
+        <span class="brand-title">Salt Wash Ward</span>
+        <span class="brand-subtitle">Classroom Finder</span>
+      </span>
+    </a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
+      <span class="theme-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Find Your Classroom</h1>
+      <p class="page-subtitle">Select your class to see its location on the floorplan</p>
+    </div>
+
+    <!-- Schedule Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="sunday-school">Sunday School</button>
+      <button class="tab-btn" data-tab="quorums-classes">Priesthood/RS</button>
+    </div>
+
+    <!-- Room Buttons -->
+    <div class="room-buttons" id="room-buttons">
+      <p class="empty-message">Loading classrooms...</p>
+    </div>
+
+    <!-- Floorplan -->
+    <div class="floorplan-card">
+      <div class="floorplan-header">
+        <h2 class="floorplan-title">Building Floorplan</h2>
+        <span class="floorplan-hint" id="floorplan-hint">Select a class above</span>
+      </div>
+      <div class="floorplan-wrapper">
+        <div class="floorplan-inner" id="floorplan-inner">
+          <!-- Floorplan image and overlays will be added here -->
+          <div class="no-floorplan" id="no-floorplan">
+            <div class="no-floorplan-icon">🗺️</div>
+            <p>Floorplan image not configured yet.</p>
+            <p>Please contact an administrator.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>Salt Wash Ward Classroom Finder</p>
+  <a class="back-link" href="/">← Back to main site</a>
+</footer>
+</div>
+
+<script type="module">
+// Firebase SDK imports
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js';
+import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js';
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBYkgD6v0mAFfCDEm_X1lbPR7kh3H27ukg",
+  authDomain: "salt-wash-ward-missionary.firebaseapp.com",
+  databaseURL: "https://salt-wash-ward-missionary-default-rtdb.firebaseio.com",
+  projectId: "salt-wash-ward-missionary",
+  storageBucket: "salt-wash-ward-missionary.firebasestorage.app",
+  messagingSenderId: "655176347538",
+  appId: "1:655176347538:web:fe919cb904eba9eb151b4b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// DOM Elements
+const themeToggle = document.getElementById('theme-toggle');
+const roomButtonsContainer = document.getElementById('room-buttons');
+const floorplanInner = document.getElementById('floorplan-inner');
+const floorplanHint = document.getElementById('floorplan-hint');
+const noFloorplan = document.getElementById('no-floorplan');
+
+// State
+let currentTab = 'sunday-school';
+let roomData = {
+  'sunday-school': [],
+  'quorums-classes': []
+};
+let roomOverlays = {};
+let highlightTimeout = null;
+
+// Floorplan image URL (public-facing)
+const FLOORPLAN_URL = 'https://storage.googleapis.com/msgsndr/Y17ODAHcaxgHoS9kMX9v/media/68108f2eeb94a847920987d4.jpeg';
+
+// Room coordinates (pixel-based for 800px container width)
+// These match the building floorplan
+const roomCoordinates = {
+  room101: { top: 246, left: 622, width: 120, height: 80 },
+  room103: { top: 332, left: 656, width: 87, height: 52 },
+  room104: { top: 387, left: 663, width: 80, height: 55 },
+  room105: { top: 444, left: 622, width: 122, height: 83 },
+  room108: { top: 639, left: 618, width: 122, height: 87 },
+  room109: { top: 728, left: 618, width: 122, height: 78 },
+  room111: { top: 813, left: 621, width: 120, height: 90 },
+  room113: { top: 906, left: 633, width: 108, height: 84 },
+  room114: { top: 987, left: 635, width: 109, height: 84 },
+  room115: { top: 1071, left: 635, width: 107, height: 84 },
+  room116: { top: 1156, left: 618, width: 126, height: 82 },
+  room118: { top: 1293, left: 573, width: 170, height: 245 },
+  room119: { top: 1380, left: 539, width: 34, height: 74 },
+  room121: { top: 1296, left: 309, width: 227, height: 88 },
+  room122: { top: 1384, left: 414, width: 62, height: 83 },
+  room123: { top: 1464, left: 372, width: 166, height: 70 },
+  room124: { top: 1423, left: 308, width: 65, height: 115 },
+  room127: { top: 1338, left: 73, width: 179, height: 204 },
+  room128: { top: 1258, left: 75, width: 122, height: 83 },
+  room129: { top: 1178, left: 74, width: 125, height: 84 },
+  room130: { top: 1099, left: 75, width: 122, height: 81 },
+  room131: { top: 897, left: 73, width: 124, height: 201 },
+  room133: { top: 701, left: 67, width: 129, height: 192 },
+  room134: { top: 629, left: 71, width: 58, height: 80 },
+  room140: { top: 445, left: 74, width: 123, height: 86 },
+  room141: { top: 387, left: 75, width: 83, height: 58 },
+  room142: { top: 326, left: 74, width: 84, height: 63 },
+  room143: { top: 238, left: 73, width: 119, height: 94 },
+  room149: { top: 598, left: 268, width: 282, height: 463 },
+  room151: { top: 1067, left: 332, width: 151, height: 137 },
+  room153: { top: 1114, left: 251, width: 76, height: 65 }
+};
+
+// === Theme Functions ===
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function initTheme() {
+  const stored = localStorage.getItem('theme');
+  const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches;
+  const initial = stored === 'light' || stored === 'dark' ? stored : (prefersLight ? 'light' : 'dark');
+  applyTheme(initial);
+
+  themeToggle?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+}
+
+// === Tab Functions ===
+function initTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      renderRoomButtons();
+      clearHighlight();
+    });
+  });
+}
+
+// Determine which Sunday of the month
+function getSundayOfMonth() {
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  const dayOfWeek = today.getDay();
+
+  // Find the date of this week's Sunday
+  const sundayDate = dayOfMonth - dayOfWeek;
+
+  // Calculate which Sunday of the month (1-5)
+  return Math.ceil(sundayDate / 7);
+}
+
+// Auto-select tab based on Sunday of the month
+function autoSelectTab() {
+  const sundayNum = getSundayOfMonth();
+  // 1st and 3rd Sundays: Sunday School
+  // 2nd and 4th Sundays: Priesthood/RS
+  if (sundayNum === 2 || sundayNum === 4) {
+    currentTab = 'quorums-classes';
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === 'quorums-classes');
+    });
+  }
+}
+
+// === Load Room Data from Firebase ===
+function loadRoomData() {
+  const classroomsRef = ref(db, 'classrooms');
+
+  onValue(classroomsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      roomData['sunday-school'] = data.sundaySchool || [];
+      roomData['quorums-classes'] = data.quorumsClasses || [];
+    }
+    renderRoomButtons();
+  }, (error) => {
+    console.error('Error loading classrooms:', error);
+    roomButtonsContainer.innerHTML = '<p class="empty-message">Error loading classrooms. Please try again.</p>';
+  });
+}
+
+// === Setup Floorplan Image and Overlays ===
+function setupFloorplan() {
+  noFloorplan.hidden = true;
+
+  // Create floorplan image
+  const floorplanImage = document.createElement('img');
+  floorplanImage.src = FLOORPLAN_URL;
+  floorplanImage.alt = 'Building Floorplan';
+  floorplanImage.style.width = '100%';
+  floorplanImage.style.display = 'block';
+  floorplanImage.addEventListener('load', () => {
+    createRoomOverlays();
+  });
+  floorplanInner.insertBefore(floorplanImage, noFloorplan);
+}
+
+// === Create Room Overlays ===
+function createRoomOverlays() {
+  // Remove existing overlays
+  Object.values(roomOverlays).forEach(overlay => overlay.remove());
+  roomOverlays = {};
+
+  for (const [roomId, coords] of Object.entries(roomCoordinates)) {
+    const overlay = document.createElement('div');
+    overlay.className = 'room-overlay';
+    overlay.dataset.roomId = roomId;
+    // Use pixel values matching the 800px container
+    overlay.style.cssText = `
+      top: ${coords.top}px;
+      left: ${coords.left}px;
+      width: ${coords.width}px;
+      height: ${coords.height}px;
+    `;
+    floorplanInner.appendChild(overlay);
+    roomOverlays[roomId] = overlay;
+  }
+}
+
+// === Render Room Buttons ===
+function renderRoomButtons() {
+  const rooms = roomData[currentTab] || [];
+
+  if (rooms.length === 0) {
+    roomButtonsContainer.innerHTML = '<p class="empty-message">No classrooms configured for this schedule.</p>';
+    return;
+  }
+
+  roomButtonsContainer.innerHTML = '';
+
+  rooms.forEach(room => {
+    if (!room.label || !room.roomId) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'room-btn';
+    btn.dataset.roomId = room.roomId;
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'room-btn-label';
+    labelSpan.textContent = room.label;
+
+    const roomSpan = document.createElement('span');
+    roomSpan.className = 'room-btn-room';
+    roomSpan.textContent = formatRoomName(room.roomId);
+
+    btn.appendChild(labelSpan);
+    btn.appendChild(roomSpan);
+
+    btn.addEventListener('click', () => {
+      // Update selected state
+      document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      // Highlight room on floorplan
+      highlightRoom(room.roomId, room.label);
+    });
+
+    roomButtonsContainer.appendChild(btn);
+  });
+}
+
+// === Format Room Name ===
+function formatRoomName(roomId) {
+  if (!roomId) return '';
+  // Convert room123 to Room 123
+  const match = roomId.match(/^([a-z_]+)(\d*)$/i);
+  if (match) {
+    const name = match[1].replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return match[2] ? `${name} ${match[2]}` : name;
+  }
+  return roomId;
+}
+
+// === Highlight Room on Floorplan ===
+function highlightRoom(roomId, label) {
+  // Clear previous highlights
+  clearHighlight();
+
+  const overlay = roomOverlays[roomId];
+  if (overlay) {
+    overlay.classList.add('highlight');
+
+    // Add label
+    const labelEl = document.createElement('span');
+    labelEl.className = 'room-label';
+    labelEl.textContent = `${formatRoomName(roomId)}\n${label}`;
+    overlay.appendChild(labelEl);
+
+    // Update hint text
+    floorplanHint.textContent = `Showing: ${label}`;
+
+    // Scroll into view
+    setTimeout(() => {
+      overlay.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    }, 100);
+
+    // Auto-clear after 10 seconds
+    highlightTimeout = setTimeout(() => {
+      clearHighlight();
+    }, 10000);
+  } else {
+    floorplanHint.textContent = `Room ${roomId} not found on floorplan`;
+  }
+}
+
+// === Clear Highlight ===
+function clearHighlight() {
+  if (highlightTimeout) {
+    clearTimeout(highlightTimeout);
+    highlightTimeout = null;
+  }
+
+  document.querySelectorAll('.room-overlay').forEach(o => {
+    o.classList.remove('highlight');
+    o.innerHTML = '';
+  });
+
+  document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('selected'));
+  floorplanHint.textContent = 'Select a class above';
+}
+
+// === Initialize ===
+function init() {
+  initTheme();
+  initTabs();
+  autoSelectTab();
+  loadRoomData();
+  setupFloorplan();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

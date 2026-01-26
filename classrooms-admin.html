@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Salt Wash Ward – Classroom Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%237c3aed' rx='20' width='100' height='100'/><text x='50' y='68' font-size='48' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>SW</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light dark;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  --bg: #f9f5ef;
+  --bg-alt: #f2e9dd;
+  --surface: #ffffff;
+  --surface-muted: #fff8f0;
+  --surface-soft: rgba(255, 255, 255, 0.82);
+  --stroke: rgba(61, 41, 21, 0.12);
+  --stroke-strong: rgba(61, 41, 21, 0.18);
+  --ink: #2f1c11;
+  --ink-soft: rgba(47, 28, 17, 0.78);
+  --ink-muted: rgba(47, 28, 17, 0.56);
+  --accent: #7c3aed;
+  --accent-strong: #5b21b6;
+  --accent-soft: rgba(124, 58, 237, 0.18);
+  --accent-contrast: #ffffff;
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.15);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.15);
+  --error: #dc2626;
+  --error-soft: rgba(220, 38, 38, 0.15);
+  --shadow-lg: 0 28px 60px rgba(64, 41, 102, 0.14);
+  --shadow-md: 0 18px 44px rgba(64, 41, 102, 0.12);
+  --shadow-sm: 0 10px 28px rgba(64, 41, 102, 0.08);
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --transition: 180ms ease;
+  --content-width: min(800px, 92vw);
+}
+
+[data-theme="dark"] {
+  --bg: #1b1624;
+  --bg-alt: #251d32;
+  --surface: rgba(31, 26, 37, 0.92);
+  --surface-muted: rgba(44, 34, 58, 0.82);
+  --surface-soft: rgba(31, 26, 37, 0.86);
+  --stroke: rgba(233, 224, 255, 0.12);
+  --stroke-strong: rgba(233, 224, 255, 0.18);
+  --ink: #f5f3ff;
+  --ink-soft: rgba(245, 243, 255, 0.82);
+  --ink-muted: rgba(245, 243, 255, 0.6);
+  --accent: #b8a4ff;
+  --accent-strong: #9f87ff;
+  --accent-soft: rgba(184, 164, 255, 0.22);
+  --accent-contrast: #160f24;
+  --shadow-lg: 0 32px 70px rgba(10, 6, 18, 0.6);
+  --shadow-md: 0 22px 50px rgba(10, 6, 18, 0.48);
+  --shadow-sm: 0 14px 32px rgba(10, 6, 18, 0.38);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, var(--bg-alt), transparent 55%),
+    linear-gradient(180deg, var(--bg) 0%, var(--surface) 60%, var(--bg-alt) 100%);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(124, 58, 237, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.35;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+/* Layout */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--surface-soft) 88%, transparent);
+  border-bottom: 1px solid var(--stroke);
+}
+
+.header-shell {
+  width: var(--content-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.75rem 0;
+  min-height: 64px;
+}
+
+/* Brand */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem 0.55rem 0.55rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--stroke);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.brand:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: inherit;
+}
+
+.brand-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+  display: grid;
+  place-items: center;
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.brand-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+}
+
+.brand-subtitle {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent-contrast) 0%, var(--accent-contrast) 34%, transparent 60%),
+    linear-gradient(140deg, var(--accent), var(--accent-strong));
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.16);
+}
+
+[data-theme="dark"] .theme-icon {
+  background: radial-gradient(circle at 70% 30%, rgba(22, 14, 33, 0.35) 0%, rgba(22, 14, 33, 0.35) 34%, transparent 58%),
+    linear-gradient(140deg, var(--accent), var(--accent-strong));
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  padding: 2rem 0;
+}
+
+.container {
+  width: var(--content-width);
+  margin: 0 auto;
+}
+
+/* Login Screen */
+.login-card {
+  max-width: 400px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.login-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.login-subtitle {
+  color: var(--ink-muted);
+  margin: 0 0 1.5rem;
+}
+
+.login-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--stroke-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.login-error {
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+  box-shadow: var(--shadow-sm);
+  font-size: 1rem;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--accent-strong);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.btn.ghost:hover {
+  background: var(--accent-soft);
+}
+
+.btn.success {
+  background: linear-gradient(140deg, var(--success), #047857);
+}
+
+.btn.full {
+  width: 100%;
+}
+
+/* Admin Panel */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.admin-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Status Messages */
+.status-message {
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.status-message.success {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.status-message.error {
+  background: var(--error-soft);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.status-message.info {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent);
+}
+
+/* Section Cards */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--stroke);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.section-header:hover {
+  background: var(--accent-soft);
+}
+
+.section-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 1.2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-toggle {
+  font-size: 1.2rem;
+  transition: transform var(--transition);
+}
+
+.section-card.collapsed .section-toggle {
+  transform: rotate(-90deg);
+}
+
+.section-card.collapsed .section-content {
+  display: none;
+}
+
+.section-content {
+  padding: 1.25rem;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--ink-soft);
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--stroke-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.form-hint {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  margin-top: 0.35rem;
+}
+
+/* Classroom Items */
+.classroom-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.classroom-item {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--surface-muted);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+}
+
+.classroom-item select,
+.classroom-item input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--stroke-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.classroom-item select:focus,
+.classroom-item input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.remove-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--surface);
+  color: var(--error);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  transition: background var(--transition), color var(--transition);
+}
+
+.remove-btn:hover {
+  background: var(--error-soft);
+}
+
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px dashed var(--stroke-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.add-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* Section Actions */
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--stroke);
+}
+
+.section-actions .add-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* Floorplan Reference */
+.floorplan-reference {
+  margin-top: 1.5rem;
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.floorplan-reference img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.floorplan-reference-label {
+  padding: 0.75rem;
+  background: var(--surface-muted);
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  :root {
+    --content-width: 95vw;
+  }
+
+  .classroom-item {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .classroom-item .remove-btn {
+    justify-self: end;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .admin-actions {
+    justify-content: center;
+  }
+
+  .header-shell {
+    padding: 0.5rem 0;
+  }
+
+  .brand {
+    padding: 0.4rem 0.6rem 0.4rem 0.4rem;
+    gap: 0.5rem;
+  }
+
+  .brand-icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.9rem;
+  }
+
+  .brand-title {
+    font-size: 1rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.72rem;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+<header class="site-header">
+  <div class="header-shell">
+    <a class="brand" href="/">
+      <span class="brand-icon" aria-hidden="true">SW</span>
+      <span class="brand-copy">
+        <span class="brand-title">Salt Wash Ward</span>
+        <span class="brand-subtitle">Classroom Admin</span>
+      </span>
+    </a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
+      <span class="theme-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <!-- Login Screen -->
+    <div id="login-screen">
+      <div class="login-card">
+        <h1 class="login-title">Classroom Admin</h1>
+        <p class="login-subtitle">Enter the password to manage classroom assignments</p>
+        <input type="password" id="password-input" class="login-input" placeholder="Password" autocomplete="off">
+        <p id="login-error" class="login-error" hidden></p>
+        <button id="login-btn" class="btn full">Sign In</button>
+      </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" hidden>
+      <div class="admin-header">
+        <h1 class="admin-title">Classroom Assignments</h1>
+        <div class="admin-actions">
+          <button id="save-btn" class="btn success">Save Changes</button>
+          <a href="/classrooms" class="btn ghost">View Finder</a>
+          <a href="/admin.html" class="btn ghost">Main Admin</a>
+          <button id="logout-btn" class="btn ghost">Logout</button>
+        </div>
+      </div>
+
+      <div id="status-message" class="status-message" hidden></div>
+
+      <!-- Sunday School Section -->
+      <div class="section-card" data-section="sunday-school">
+        <div class="section-header">
+          <h2 class="section-title">Sunday School Classes</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <p class="form-hint" style="margin-bottom: 1rem;">Classes held on 1st and 3rd Sundays.</p>
+          <div id="sunday-school-items" class="classroom-items"></div>
+          <div class="section-actions">
+            <button type="button" class="add-btn" data-add="sunday-school">+ Add Class</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priesthood/RS Section -->
+      <div class="section-card" data-section="quorums-classes">
+        <div class="section-header">
+          <h2 class="section-title">Priesthood/Relief Society</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <p class="form-hint" style="margin-bottom: 1rem;">Classes held on 2nd and 4th Sundays.</p>
+          <div id="quorums-classes-items" class="classroom-items"></div>
+          <div class="section-actions">
+            <button type="button" class="add-btn" data-add="quorums-classes">+ Add Class</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floorplan Reference -->
+      <div class="section-card" data-section="reference">
+        <div class="section-header">
+          <h2 class="section-title">Floorplan Reference</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <p class="form-hint">Reference image showing room numbers and locations.</p>
+          <div class="floorplan-reference" id="floorplan-reference">
+            <img src="https://storage.googleapis.com/msgsndr/Y17ODAHcaxgHoS9kMX9v/media/69777655c1fa0c7658c0cb42.jpeg" alt="Building Floorplan with Room Numbers">
+            <p class="floorplan-reference-label">Building floorplan with room numbers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>Salt Wash Ward Classroom Admin</p>
+</footer>
+</div>
+
+<script type="module">
+// Firebase SDK imports
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js';
+import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js';
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBYkgD6v0mAFfCDEm_X1lbPR7kh3H27ukg",
+  authDomain: "salt-wash-ward-missionary.firebaseapp.com",
+  databaseURL: "https://salt-wash-ward-missionary-default-rtdb.firebaseio.com",
+  projectId: "salt-wash-ward-missionary",
+  storageBucket: "salt-wash-ward-missionary.firebasestorage.app",
+  messagingSenderId: "655176347538",
+  appId: "1:655176347538:web:fe919cb904eba9eb151b4b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Simple password (shared with main admin)
+const ADMIN_PASSWORD = '1Givethanks';
+
+// Room options (matching the building floorplan)
+const roomOptions = [
+  { id: 'room101', label: 'Room 101' },
+  { id: 'room103', label: 'Room 103' },
+  { id: 'room104', label: 'Room 104' },
+  { id: 'room105', label: 'Room 105' },
+  { id: 'room108', label: 'Room 108' },
+  { id: 'room109', label: 'Room 109' },
+  { id: 'room111', label: 'Room 111' },
+  { id: 'room113', label: 'Room 113' },
+  { id: 'room114', label: 'Room 114' },
+  { id: 'room115', label: 'Room 115' },
+  { id: 'room116', label: 'Room 116' },
+  { id: 'room118', label: 'Room 118 (Large)' },
+  { id: 'room119', label: 'Room 119' },
+  { id: 'room121', label: 'Room 121' },
+  { id: 'room122', label: 'Room 122' },
+  { id: 'room123', label: 'Room 123' },
+  { id: 'room124', label: 'Room 124' },
+  { id: 'room127', label: 'Room 127 (Large)' },
+  { id: 'room128', label: 'Room 128' },
+  { id: 'room129', label: 'Room 129' },
+  { id: 'room130', label: 'Room 130' },
+  { id: 'room131', label: 'Room 131 (Large)' },
+  { id: 'room133', label: 'Room 133 (Large)' },
+  { id: 'room134', label: 'Room 134' },
+  { id: 'room140', label: 'Room 140' },
+  { id: 'room141', label: 'Room 141' },
+  { id: 'room142', label: 'Room 142' },
+  { id: 'room143', label: 'Room 143' },
+  { id: 'room149', label: 'Room 149 (Gym/Cultural Hall)' },
+  { id: 'room151', label: 'Room 151' },
+  { id: 'room153', label: 'Room 153' }
+];
+
+// DOM Elements
+const loginScreen = document.getElementById('login-screen');
+const adminPanel = document.getElementById('admin-panel');
+const passwordInput = document.getElementById('password-input');
+const loginBtn = document.getElementById('login-btn');
+const loginError = document.getElementById('login-error');
+const logoutBtn = document.getElementById('logout-btn');
+const saveBtn = document.getElementById('save-btn');
+const statusMessage = document.getElementById('status-message');
+const themeToggle = document.getElementById('theme-toggle');
+
+// Section containers
+const sections = {
+  'sunday-school': document.getElementById('sunday-school-items'),
+  'quorums-classes': document.getElementById('quorums-classes-items')
+};
+
+// Current data
+let roomData = {
+  sundaySchool: [],
+  quorumsClasses: []
+};
+
+// === Theme Functions ===
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function initTheme() {
+  const stored = localStorage.getItem('theme');
+  const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches;
+  const initial = stored === 'light' || stored === 'dark' ? stored : (prefersLight ? 'light' : 'dark');
+  applyTheme(initial);
+
+  themeToggle?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+}
+
+// === Authentication ===
+function checkAuth() {
+  // Accept auth from main admin OR classrooms admin
+  return sessionStorage.getItem('admin-auth') === 'true' ||
+         sessionStorage.getItem('classrooms-admin-auth') === 'true';
+}
+
+function login() {
+  const password = passwordInput.value;
+  if (password === ADMIN_PASSWORD) {
+    // Set both auth keys for compatibility
+    sessionStorage.setItem('admin-auth', 'true');
+    sessionStorage.setItem('classrooms-admin-auth', 'true');
+    loginScreen.hidden = true;
+    adminPanel.hidden = false;
+    loadRoomData();
+  } else {
+    loginError.textContent = 'Incorrect password';
+    loginError.hidden = false;
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('classrooms-admin-auth');
+  // Don't remove admin-auth to keep main admin session
+  adminPanel.hidden = true;
+  loginScreen.hidden = false;
+  passwordInput.value = '';
+}
+
+// === Status Messages ===
+function showStatus(message, type = 'info') {
+  statusMessage.textContent = message;
+  statusMessage.className = `status-message ${type}`;
+  statusMessage.hidden = false;
+
+  if (type === 'success') {
+    setTimeout(() => {
+      statusMessage.hidden = true;
+    }, 3000);
+  }
+}
+
+// === Section Toggle ===
+function initSectionToggles() {
+  document.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      header.closest('.section-card').classList.toggle('collapsed');
+    });
+  });
+}
+
+// === Create Room Option HTML ===
+function createRoomOptionsHTML(selectedId = '') {
+  return roomOptions.map(room =>
+    `<option value="${room.id}" ${room.id === selectedId ? 'selected' : ''}>${room.label}</option>`
+  ).join('');
+}
+
+// === Create Classroom Item HTML ===
+function createClassroomItemHTML(item = {}) {
+  const { roomId = '', label = '' } = item;
+
+  const div = document.createElement('div');
+  div.className = 'classroom-item';
+
+  div.innerHTML = `
+    <select class="room-select">
+      <option value="">Select Room...</option>
+      ${createRoomOptionsHTML(roomId)}
+    </select>
+    <input type="text" class="class-label" placeholder="Class/Group Name (e.g., Gospel Doctrine)" value="${escapeHtml(label)}">
+    <button type="button" class="remove-btn" title="Remove">&times;</button>
+  `;
+
+  // Remove button handler
+  div.querySelector('.remove-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to remove this classroom assignment?')) {
+      div.remove();
+    }
+  });
+
+  return div;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+// === Add Item Buttons ===
+function initAddButtons() {
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.dataset.add;
+      const container = sections[section];
+      if (container) {
+        const item = createClassroomItemHTML();
+        container.appendChild(item);
+      }
+    });
+  });
+}
+
+// === Load Data from Firebase ===
+async function loadRoomData() {
+  showStatus('Loading classroom data...', 'info');
+
+  try {
+    const classroomsSnapshot = await get(ref(db, 'classrooms'));
+
+    if (classroomsSnapshot.exists()) {
+      roomData = classroomsSnapshot.val();
+    }
+
+    renderData();
+    showStatus('Data loaded successfully', 'success');
+  } catch (error) {
+    console.error('Error loading data:', error);
+    showStatus('Error loading data. Please try again.', 'error');
+  }
+}
+
+// === Render Data ===
+function renderData() {
+  // Render Sunday School
+  sections['sunday-school'].innerHTML = '';
+  (roomData.sundaySchool || []).forEach(item => {
+    sections['sunday-school'].appendChild(createClassroomItemHTML(item));
+  });
+
+  // Render Priesthood/RS
+  sections['quorums-classes'].innerHTML = '';
+  (roomData.quorumsClasses || []).forEach(item => {
+    sections['quorums-classes'].appendChild(createClassroomItemHTML(item));
+  });
+}
+
+// === Save Data to Firebase ===
+async function saveData() {
+  saveBtn.disabled = true;
+  showStatus('Saving changes...', 'info');
+
+  try {
+    const newRoomData = collectRoomData();
+
+    await set(ref(db, 'classrooms'), newRoomData);
+
+    roomData = newRoomData;
+    showStatus('Changes saved successfully!', 'success');
+  } catch (error) {
+    console.error('Error saving:', error);
+    showStatus('Error saving: ' + error.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+  }
+}
+
+// === Collect Room Data ===
+function collectRoomData() {
+  function collectSection(container) {
+    const items = [];
+    container.querySelectorAll('.classroom-item').forEach(item => {
+      const roomId = item.querySelector('.room-select')?.value || '';
+      const label = item.querySelector('.class-label')?.value?.trim() || '';
+      if (roomId && label) {
+        items.push({ roomId, label });
+      }
+    });
+    return items;
+  }
+
+  return {
+    sundaySchool: collectSection(sections['sunday-school']),
+    quorumsClasses: collectSection(sections['quorums-classes'])
+  };
+}
+
+// === Event Listeners ===
+loginBtn.addEventListener('click', login);
+passwordInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') login();
+});
+logoutBtn.addEventListener('click', logout);
+saveBtn.addEventListener('click', saveData);
+
+// === Initialize ===
+function init() {
+  initTheme();
+  initSectionToggles();
+  initAddButtons();
+
+  if (checkAuth()) {
+    loginScreen.hidden = true;
+    adminPanel.hidden = false;
+    loadRoomData();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

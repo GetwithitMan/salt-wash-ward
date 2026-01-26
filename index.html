@@ -1051,6 +1051,7 @@ img {
         <li><a class="nav-link" data-scroll="announcements" href="#announcements" hidden>Announcements</a></li>
         <li><a class="nav-link" data-scroll="events" href="#events">Events</a></li>
         <li><a class="nav-link" href="/missionary.html">Missionary</a></li>
+        <li><a class="nav-link" href="/classrooms.html" id="classrooms-nav-link" hidden>Classrooms</a></li>
         <li><a class="nav-link" data-scroll="family" href="#family" hidden>Family</a></li>
       </ul>
     </nav>
@@ -2160,6 +2161,25 @@ async function loadEvents() {
   }
 }
 
+// === Site Settings Functions ===
+async function loadSiteSettings() {
+  try {
+    const snapshot = await get(ref(db, 'siteSettings'));
+    const settings = snapshot.val() || {};
+
+    const classroomsNavLink = document.getElementById('classrooms-nav-link');
+    if (classroomsNavLink) {
+      if (settings.showClassroomsNav) {
+        classroomsNavLink.removeAttribute('hidden');
+      } else {
+        classroomsNavLink.setAttribute('hidden', '');
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load site settings:', error);
+  }
+}
+
 // === Initialization ===
 async function init() {
   initTheme();
@@ -2171,7 +2191,8 @@ async function init() {
   const results = await Promise.allSettled([
     loadProgram(),
     loadEvents(),
-    loadWardInfo()
+    loadWardInfo(),
+    loadSiteSettings()
   ]);
 
   results.forEach((result) => {

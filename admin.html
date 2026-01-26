@@ -1268,6 +1268,37 @@ main {
         </div>
       </div>
 
+      <!-- Site Settings Section -->
+      <div class="section-card collapsed" data-section="site-settings">
+        <div class="section-header">
+          <h2 class="section-title">Site Settings</h2>
+          <span class="section-toggle">▼</span>
+        </div>
+        <div class="section-content">
+          <p class="form-hint" style="margin-bottom: 1rem;">Control visibility of navigation links and site features.</p>
+          <div class="form-group" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--surface-muted); border-radius: var(--radius-sm);">
+            <label class="toggle-switch" style="flex-shrink: 0;">
+              <input type="checkbox" id="show-classrooms-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+            <div>
+              <span style="font-weight: 600;">Show Classrooms in Navigation</span>
+              <p class="form-hint" style="margin: 0.25rem 0 0;">When enabled, a Classrooms link appears in the main site navigation.</p>
+            </div>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem; background: var(--surface-muted); border-radius: var(--radius-sm); margin-top: 1rem;">
+            <div>
+              <span style="font-weight: 600;">Manage Classroom Assignments</span>
+              <p class="form-hint" style="margin: 0.25rem 0 0;">Configure which rooms are assigned to which classes.</p>
+            </div>
+            <a href="/classrooms-admin" class="btn ghost" style="flex-shrink: 0;">Open Classroom Admin</a>
+          </div>
+          <div class="section-actions">
+            <button type="button" class="btn success section-save-btn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </main>
@@ -1780,11 +1811,12 @@ async function loadProgram() {
   showStatus('Loading program...', 'info');
 
   try {
-    // Load program, events, and missionaries in parallel
-    const [programSnapshot, eventsSnapshot, missionariesSnapshot] = await Promise.all([
+    // Load program, events, missionaries, and site settings in parallel
+    const [programSnapshot, eventsSnapshot, missionariesSnapshot, siteSettingsSnapshot] = await Promise.all([
       get(ref(db, 'sundayProgram')),
       get(ref(db, 'events')),
-      get(ref(db, 'missionaries'))
+      get(ref(db, 'missionaries')),
+      get(ref(db, 'siteSettings'))
     ]);
 
     if (programSnapshot.exists()) {
@@ -1808,6 +1840,13 @@ async function loadProgram() {
       renderMissionaries(missionariesData);
     } else {
       missionariesData = [];
+    }
+
+    // Load site settings
+    const siteSettings = siteSettingsSnapshot.val() || {};
+    const showClassroomsToggle = document.getElementById('show-classrooms-toggle');
+    if (showClassroomsToggle) {
+      showClassroomsToggle.checked = siteSettings.showClassroomsNav || false;
     }
 
     showStatus('Program loaded successfully', 'success');
@@ -1938,11 +1977,18 @@ async function saveProgram() {
     const newEventsData = collectEventsData();
     const newMissionariesData = collectMissionariesData();
 
+    // Collect site settings
+    const showClassroomsToggle = document.getElementById('show-classrooms-toggle');
+    const newSiteSettings = {
+      showClassroomsNav: showClassroomsToggle?.checked || false
+    };
+
     // Save all in parallel
     await Promise.all([
       set(ref(db, 'sundayProgram'), newProgramData),
       set(ref(db, 'events'), newEventsData),
-      set(ref(db, 'missionaries'), newMissionariesData)
+      set(ref(db, 'missionaries'), newMissionariesData),
+      set(ref(db, 'siteSettings'), newSiteSettings)
     ]);
 
     programData = newProgramData;
